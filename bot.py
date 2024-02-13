@@ -46,7 +46,7 @@ async def posting2channel():
         else:
             continue
 
-scheduler.add_job(posting2channel, "interval", seconds=5)
+scheduler.add_job(posting2channel, "interval", seconds=30)
 
 
 # Запуск процесса поллинга новых апдейтов
