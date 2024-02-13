@@ -22,6 +22,7 @@ class TelegramChannel:
     def __init__(self, url, start_post):
         if self.check_channel_doc(url):
             with open("channels/" + url[13:] + ".txt", "r") as f:
+                # надо будет удалить self.posts_list отовсюду. все равно он нигде не используется
                 self.channel_url, self.stub, self.last_post, self.posts_list = (i[:-1] for i in f.readlines())
                 f.close()
                 self.stub = self.stub
