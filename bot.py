@@ -37,6 +37,8 @@ async def cmd_info(message: types.Message):
     await message.answer("Бот для создания собственной ленты")
     await message.delete()
 
+# Здесь должен быть хэндлер на прием новых каналов от пользователя
+
 
 async def posting2channel():
     latest_posts = dict(get_latest_posts())
