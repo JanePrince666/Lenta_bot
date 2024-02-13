@@ -89,7 +89,3 @@ def get_latest_posts():
         channel.update_posts_list()
         last = channel.get_last_post()
         yield last[0], last[1]
-
-#
-# for i in get_latest_posts():
-#     print(i)
