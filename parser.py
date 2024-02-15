@@ -23,14 +23,12 @@ class TelegramChannel:
         if self.check_channel_doc(url):
             with open("channels/" + url[13:] + ".txt", "r") as f:
                 # надо будет удалить self.posts_list отовсюду. все равно он нигде не используется
-                self.channel_url, self.stub, self.last_post, self.posts_list = (i[:-1] for i in f.readlines())
+                self.channel_url, self.stub, self.last_post = (i[:-1] for i in f.readlines())
                 f.close()
                 self.stub = self.stub
-                self.posts_list = self.posts_list[:-1].split(", ")
                 self.last_post = int(self.last_post)
         else:
             self.channel_url = url
-            self.posts_list = []
             self.stub = TelegramPost(url + "/1").get_text()
             self.last_post = start_post
             with open("channels/" + url[13:] + ".txt", "w") as f:
@@ -54,8 +52,7 @@ class TelegramChannel:
                 f.writelines(f"{self.channel_url}\n")
                 f.writelines(f"{self.stub}\n")
                 f.writelines(f"{self.last_post}\n")
-                for i in self.posts_list:
-                    f.writelines(f"{i}, ")
+                f.close()
         else:
             print(f"no such doc: {doc}")
 
@@ -64,11 +61,10 @@ class TelegramChannel:
         while all((i is not None for i in post_list)):
             post_list = []
             counter = self.last_post + 1
-            for i in range(5):
+            for i in range(10):
                 post_url = self.channel_url + f"/{counter}"
                 post_text = TelegramPost(post_url).get_text()
                 if post_text != self.stub and len(post_text) > 0:
-                    self.posts_list.append(post_url)
                     self.last_post = counter
                     counter += 1
                 else:
@@ -79,9 +75,6 @@ class TelegramChannel:
     def get_last_post(self):
         post = TelegramPost(self.channel_url + f'/{self.last_post}')
         return post.get_url(), post.get_text()
-
-    def get_posts_list(self):
-        return self.posts_list
 
 
 def get_latest_posts():
