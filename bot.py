@@ -38,7 +38,7 @@ async def cmd_info(message: types.Message):
 
 # Здесь должен быть хэндлер на прием id канала пользователя
 
-# Здесь должен быть хэндлер на прием новых каналов от пользователя
+# Хэндлер на прием новых каналов от пользователя
 @dp.message()
 async def cmd_add_channel(message: types.Message):
     if "https://t.me/" in message.text:
