@@ -5,8 +5,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
-from parser import TelegramChannel, TelegramPost
+from parser import TelegramChannel
 from channel_list import channel_list
+from db_management_OOP import connection
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -38,6 +39,23 @@ async def cmd_info(message: types.Message):
 # Здесь должен быть хэндлер на прием id канала пользователя
 
 # Здесь должен быть хэндлер на прием новых каналов от пользователя
+@dp.message()
+async def cmd_add_channel(message: types.Message):
+    if "https://t.me/" in message.text:
+        url = ""
+        for i in message.text:
+            try:
+                int(i)
+            except ValueError:
+                url += i
+        index = len(message.text) - len(url)
+        last_post = int(message.text[-index:])
+        url = url[:-1]
+        TelegramChannel(url, last_post)
+        await message.answer("Добавила!")
+    else:
+        await message.answer("Не телеграм-пост")
+        await message.delete()
 
 
 channels = (TelegramChannel(url, start_post) for url, start_post in channel_list)
