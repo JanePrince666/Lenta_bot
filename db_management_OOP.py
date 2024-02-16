@@ -31,7 +31,8 @@ class MySQL:
             self.connection.commit()
 
     def select_channel_data(self, url):
-        select_channel_rows = f"SELECT url, stub, last_post_number FROM `ParsingChannels` WHERE url = '{url}' "
+        select_channel_rows = (f"SELECT url, stub, last_post_number FROM `ParsingChannels`"
+                               f"WHERE url = '{url}' ")
         with self.connection.cursor() as cursor:
             cursor.execute(select_channel_rows)
             rows = cursor.fetchall()

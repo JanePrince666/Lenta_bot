@@ -18,7 +18,7 @@ class TelegramPost:
 
 
 class TelegramChannel:
-    def __init__(self, url, start_post):
+    def __init__(self, url, start_post=50):
         if self.check_channel_doc(url):
             self.channel_url, self.stub, self.last_post = connection.select_channel_data(url)[0]
         else:
@@ -33,21 +33,18 @@ class TelegramChannel:
 
     def check_new_posts(self):
         post_list = []
-        while all((i is not None for i in post_list)):
-            post_list = []
-            counter = self.last_post + 1
-            for i in range(10):
-                post_url = self.channel_url + f"/{counter}"
-                post_text = TelegramPost(post_url).get_text()
-                if post_text != self.stub and len(post_text) > 0:
-                    self.last_post = counter
-                    connection.change_channel_last_post(self.channel_url, self.last_post)
-                    yield post_url
-                    counter += 1
-                else:
-                    post_list.append(None)
-                    counter += 1
-
-    def get_last_post(self):
-        post = TelegramPost(self.channel_url + f'/{self.last_post}')
-        return post.get_url(), post.get_text()
+        counter = self.last_post + 1
+        for i in range(10):
+            post_url = self.channel_url + f"/{counter}"
+            post_text = TelegramPost(post_url).get_text()
+            if post_text != self.stub and len(post_text) > 0:
+                self.last_post = counter
+                post_list.append(True)
+                connection.change_channel_last_post(self.channel_url, self.last_post)
+                yield post_url
+                counter += 1
+            else:
+                post_list.append(None)
+                counter += 1
+        if any((i is not None for i in post_list)):
+            self.check_new_posts()
