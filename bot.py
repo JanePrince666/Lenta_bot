@@ -18,7 +18,6 @@ bot = Bot(token=my_token)
 dp = Dispatcher()
 router = Router()
 
-# надо поправить таймзону
 scheduler = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
