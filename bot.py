@@ -39,11 +39,13 @@ async def cmd_info(message: types.Message):
 
 # Функция получения новых постов
 async def get_latest_posts():
+    new_posts = []
     for url, start_post in channel_list:
         channel = TelegramChannel(url, start_post)
-        for post_url in channel.check_new_posts():
-            post_text = TelegramPost(post_url).get_text()
-            await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
+        new_posts += list(channel.check_new_posts())
+    for post_url in new_posts:
+        post_text = TelegramPost(post_url).get_text()
+        await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
 
 
 scheduler.add_job(get_latest_posts, "interval", seconds=30)
