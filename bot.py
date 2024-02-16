@@ -19,7 +19,7 @@ dp = Dispatcher()
 router = Router()
 
 # надо поправить таймзону
-scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+scheduler = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
 # Хэндлер на команду /start
