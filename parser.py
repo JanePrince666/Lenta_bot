@@ -1,7 +1,9 @@
 import requests
 from bs4 import BeautifulSoup as bs
-import os.path
-from channel_list import channel_list
+from db_management_OOP import MySQL
+from config import db_host, db_user_name, db_password
+
+connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
 
 
 class TelegramPost:
@@ -21,42 +23,18 @@ class TelegramPost:
 class TelegramChannel:
     def __init__(self, url, start_post):
         if self.check_channel_doc(url):
-            with open("channels/" + url[13:] + ".txt", "r") as f:
-                # надо будет удалить self.posts_list отовсюду. все равно он нигде не используется
-                self.channel_url, self.stub, self.last_post = (i[:-1] for i in f.readlines())
-                f.close()
-                self.stub = self.stub
-                self.last_post = int(self.last_post)
+            self.channel_url, self.stub, self.last_post = connection.select_channel_data(url)[0]
         else:
             self.channel_url = url
             self.stub = TelegramPost(url + "/1").get_text()
             self.last_post = start_post
-            with open("channels/" + url[13:] + ".txt", "w") as f:
-                f.close()
-            self.update_posts_list()
+            connection.create_new_channel(self.channel_url, self.stub, self.last_post)
 
     @staticmethod
     def check_channel_doc(url):
-        channel_name = url[13:]
-        doc_name = "channels" + f"/{channel_name}" + ".txt"
-        if os.path.exists(doc_name):
-            return True
-        else:
-            return False
+        return len(connection.select_channel_data(url)) > 0
 
-    def save_changes2doc(self):
-        doc = "channels/" + self.channel_url[13:] + ".txt"
-
-        if os.path.exists(doc):
-            with open(doc, "w") as f:
-                f.writelines(f"{self.channel_url}\n")
-                f.writelines(f"{self.stub}\n")
-                f.writelines(f"{self.last_post}\n")
-                f.close()
-        else:
-            print(f"no such doc: {doc}")
-
-    def update_posts_list(self):
+    def check_new_posts(self):
         post_list = []
         while all((i is not None for i in post_list)):
             post_list = []
@@ -66,21 +44,13 @@ class TelegramChannel:
                 post_text = TelegramPost(post_url).get_text()
                 if post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter
+                    connection.change_channel_last_post(self.channel_url, self.last_post)
+                    yield post_url
                     counter += 1
                 else:
                     post_list.append(None)
                     counter += 1
-        self.save_changes2doc()
 
     def get_last_post(self):
         post = TelegramPost(self.channel_url + f'/{self.last_post}')
         return post.get_url(), post.get_text()
-
-
-def get_latest_posts():
-    for url, start_post in channel_list:
-        channel = TelegramChannel(url, start_post)
-        channel.update_posts_list()
-        last = channel.get_last_post()
-        yield last[0], last[1]
-

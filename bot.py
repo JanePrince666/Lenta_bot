@@ -5,7 +5,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
-from parser import get_latest_posts
+from parser import TelegramChannel, TelegramPost
+from channel_list import channel_list
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -19,9 +20,6 @@ router = Router()
 
 # надо поправить таймзону
 scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
-
-# Список запощенных постов
-posted = []
 
 
 # Хэндлер на команду /start
@@ -40,16 +38,16 @@ async def cmd_info(message: types.Message):
 # Здесь должен быть хэндлер на прием новых каналов от пользователя
 
 
-async def posting2channel():
-    latest_posts = dict(get_latest_posts())
-    for i in latest_posts:
-        if i not in posted:
-            await bot.send_message(chat_id=CHANNEL_ID, text=i + "\n" + latest_posts[i])
-            posted.append(i)
-        else:
-            continue
+# Функция получения новых постов
+async def get_latest_posts():
+    for url, start_post in channel_list:
+        channel = TelegramChannel(url, start_post)
+        for post_url in channel.check_new_posts():
+            post_text = TelegramPost(post_url).get_text()
+            await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
 
-scheduler.add_job(posting2channel, "interval", seconds=30)
+
+scheduler.add_job(get_latest_posts, "interval", seconds=30)
 
 
 # Запуск процесса поллинга новых апдейтов
