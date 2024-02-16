@@ -24,11 +24,12 @@ class MySQL:
             self.connection.commit()
 
     def create_new_channel(self, url, stub, last_post_number: int):
-        insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
-                        f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
-        with self.connection.cursor() as cursor:
-            cursor.execute(insert_query)
-            self.connection.commit()
+        if not self.check_url(url):
+            insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
+                            f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
+            with self.connection.cursor() as cursor:
+                cursor.execute(insert_query)
+                self.connection.commit()
 
     def select_channel_data(self, url):
         select_channel_rows = (f"SELECT url, stub, last_post_number FROM `ParsingChannels`"
@@ -38,11 +39,24 @@ class MySQL:
             rows = cursor.fetchall()
             return rows
 
+    def check_url(self, url):
+        return len(self.select_channel_data(url)) > 0
+
     def change_channel_last_post(self, url, new_data: int):
-        change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
-        with self.connection.cursor() as cursor:
-            cursor.execute(change_query)
-            self.connection.commit()
+        if self.check_url(url):
+            change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
+            with self.connection.cursor() as cursor:
+                cursor.execute(change_query)
+                self.connection.commit()
+
+    def get_channel_stub(self, url):
+        if self.check_url(url):
+            select_channel_stub = (f"SELECT stub FROM `ParsingChannels`"
+                                   f"WHERE url = '{url}' ")
+            with self.connection.cursor() as cursor:
+                cursor.execute(select_channel_stub)
+                stub = cursor.fetchall()[0][0]
+                return stub
 
     def get_channels_list(self):
         select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
@@ -63,4 +77,4 @@ class MySQL:
 
 
 connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
-
+# print([i for i in connection.get_channels_list()])
