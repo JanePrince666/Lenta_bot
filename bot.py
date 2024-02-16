@@ -6,7 +6,6 @@ from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
 from parser import TelegramChannel
-from channel_list import channel_list
 from db_management_OOP import connection
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -58,14 +57,12 @@ async def cmd_add_channel(message: types.Message):
         await message.delete()
 
 
-channels = (TelegramChannel(url, start_post) for url, start_post in channel_list)
-
-
 # Функция получения новых постов
 async def get_latest_posts():
+    channels = (TelegramChannel(url, start_post) for url, start_post in connection.get_channels_list())
     for channel in channels:
-        for post_url, post_text in channel.check_new_posts():
-            await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
+        for post in channel.check_new_posts():
+            await bot.send_message(chat_id=CHANNEL_ID, text=post.get_url() + "\n" + post.get_text())
 
 
 scheduler.add_job(get_latest_posts, "interval", seconds=30)

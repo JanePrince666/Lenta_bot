@@ -44,6 +44,13 @@ class MySQL:
             cursor.execute(change_query)
             self.connection.commit()
 
+    def get_channels_list(self):
+        select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
+        with self.connection.cursor() as cursor:
+            cursor.execute(select_all_channel)
+            for i in cursor.fetchall():
+                yield i
+
     def select_all_data(self):
         select_all_rows = f"SELECT * FROM `ParsingChannels` "
         with self.connection.cursor() as cursor:
@@ -56,3 +63,4 @@ class MySQL:
 
 
 connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
+

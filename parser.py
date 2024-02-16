@@ -4,8 +4,8 @@ from db_management_OOP import connection
 
 
 class TelegramPost:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, channel_url, post_number):
+        self.url = channel_url + f"/{post_number}"
 
     def get_text(self):
         r = requests.get(self.url)
@@ -34,14 +34,16 @@ class TelegramChannel:
     def check_new_posts(self):
         post_list = []
         counter = self.last_post + 1
-        for i in range(10):
-            post_url = self.channel_url + f"/{counter}"
-            post_text = TelegramPost(post_url).get_text()
+        # while any((i is not None for i in post_list)):
+        #     post_list = []
+        for i in range(7):
+            post = TelegramPost(self.channel_url, counter)
+            post_text = post.get_text()
             if post_text != self.stub and len(post_text) > 0:
                 self.last_post = counter
                 post_list.append(True)
                 connection.change_channel_last_post(self.channel_url, self.last_post)
-                yield post_url, post_text
+                yield post
                 counter += 1
             else:
                 post_list.append(None)
