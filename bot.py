@@ -34,18 +34,20 @@ async def cmd_info(message: types.Message):
     await message.answer("Бот для создания собственной ленты")
     await message.delete()
 
+
+# Здесь должен быть хэндлер на прием id канала пользователя
+
 # Здесь должен быть хэндлер на прием новых каналов от пользователя
+
+
+channels = (TelegramChannel(url, start_post) for url, start_post in channel_list)
 
 
 # Функция получения новых постов
 async def get_latest_posts():
-    new_posts = []
-    for url, start_post in channel_list:
-        channel = TelegramChannel(url, start_post)
-        new_posts += list(channel.check_new_posts())
-    for post_url in new_posts:
-        post_text = TelegramPost(post_url).get_text()
-        await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
+    for channel in channels:
+        for post_url, post_text in channel.check_new_posts():
+            await bot.send_message(chat_id=CHANNEL_ID, text=post_url + "\n" + post_text)
 
 
 scheduler.add_job(get_latest_posts, "interval", seconds=30)

@@ -41,7 +41,7 @@ class TelegramChannel:
                 self.last_post = counter
                 post_list.append(True)
                 connection.change_channel_last_post(self.channel_url, self.last_post)
-                yield post_url
+                yield post_url, post_text
                 counter += 1
             else:
                 post_list.append(None)
