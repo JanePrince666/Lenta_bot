@@ -24,7 +24,8 @@ class MySQL:
             self.connection.commit()
 
     def create_new_channel(self, url, stub, last_post_number: int):
-        insert_query = f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) VALUES ('{url}', '{stub}', '{last_post_number}')"
+        insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
+                        f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
         with self.connection.cursor() as cursor:
             cursor.execute(insert_query)
             self.connection.commit()
@@ -51,3 +52,6 @@ class MySQL:
 
     def __del__(self):
         self.connection.close()
+
+
+connection = MySQL(db_host, db_user_name, db_password, "lenta_db")

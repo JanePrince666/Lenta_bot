@@ -1,9 +1,6 @@
 import requests
 from bs4 import BeautifulSoup as bs
-from db_management_OOP import MySQL
-from config import db_host, db_user_name, db_password
-
-connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
+from db_management_OOP import connection
 
 
 class TelegramPost:
