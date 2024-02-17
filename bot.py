@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import logging
 import sys
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -19,8 +20,9 @@ bot = Bot(token=my_token)
 dp = Dispatcher()
 router = Router()
 
-scheduler_update_post_list = AsyncIOScheduler(timezone="Asia/Tbilisi")
-scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
+# scheduler_update_post_list = AsyncIOScheduler(timezone="Asia/Tbilisi")
+# scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
+# scheduler = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
 # Хэндлер на команду /start
@@ -63,27 +65,35 @@ async def cmd_add_channel(message: types.Message):
 # Функция получения новых постов
 # @time_of_function
 async def post():
-    for post_url, post_text in connection.get_posting_list():
-        await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
-        connection.del_from_posting_list(post_url)
+    while True:
+        for post_url, post_text in connection.get_posting_list():
+            await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
+            connection.del_from_posting_list(post_url)
 
 
 async def get_new_posts():
-    for url, start_post in connection.get_channels_list():
-        channel = TelegramChannel(url, start_post)
-        await channel.check_new_posts()
+    while True:
+        for url, start_post in connection.get_channels_list():
+            channel = TelegramChannel(url, start_post)
+            await channel.check_new_posts()
 
 
-scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=60)
-scheduler_for_posting.add_job(post, "interval", seconds=10)
+# scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=60)
+# scheduler_for_posting.add_job(post, "interval", seconds=10)
+
+# scheduler.add_job(get_new_posts, "interval", seconds=60)
+# scheduler.add_job(post, "interval", seconds=10)
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    scheduler_update_post_list.start()
-    scheduler_for_posting.start()
+    # scheduler_update_post_list.start()
+    # scheduler_for_posting.start()
     # await get_new_posts()
+    # await asyncio.gather(scheduler_update_post_list.start(), scheduler_for_posting.start())
+    # scheduler.start()
     await dp.start_polling(bot)
+    await asyncio.gather(get_new_posts(), post())
 
 
 if __name__ == "__main__":
