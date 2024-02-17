@@ -62,7 +62,7 @@ async def get_latest_posts():
     for url, start_post in connection.get_channels_list():
         channel = TelegramChannel(url, start_post)
         for post in channel.check_new_posts():
-            await bot.send_message(chat_id=CHANNEL_ID, text=post.get_url() + "\n" + post.get_text())
+            await bot.send_message(chat_id=CHANNEL_ID, text=post.get_url() + "\n" + post.post_text)
 
 
 scheduler.add_job(get_latest_posts, "interval", seconds=30)

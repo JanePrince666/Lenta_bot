@@ -1,8 +1,10 @@
 import mysql.connector
 from config import db_host, db_user_name, db_password
+from profiler import time_of_function
 
 
 class MySQL:
+    # @time_of_function
     def __init__(self, host, user, password, db_name):
         self.connection = mysql.connector.connect(
             host=host,
@@ -23,6 +25,7 @@ class MySQL:
             cursor.execute(delete_query)
             self.connection.commit()
 
+    # @time_of_function
     def create_new_channel(self, url, stub, last_post_number: int):
         if not self.check_url(url):
             insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
@@ -31,6 +34,7 @@ class MySQL:
                 cursor.execute(insert_query)
                 self.connection.commit()
 
+    # @time_of_function
     def select_channel_data(self, url):
         select_channel_rows = (f"SELECT url, stub, last_post_number FROM `ParsingChannels`"
                                f"WHERE url = '{url}' ")
@@ -39,9 +43,11 @@ class MySQL:
             rows = cursor.fetchall()
             return rows
 
+    # @time_of_function
     def check_url(self, url):
         return len(self.select_channel_data(url)) > 0
 
+    # @time_of_function
     def change_channel_last_post(self, url, new_data: int):
         if self.check_url(url):
             change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
@@ -49,6 +55,7 @@ class MySQL:
                 cursor.execute(change_query)
                 self.connection.commit()
 
+    # @time_of_function
     def get_channel_stub(self, url):
         if self.check_url(url):
             select_channel_stub = (f"SELECT stub FROM `ParsingChannels`"
@@ -58,6 +65,7 @@ class MySQL:
                 stub = cursor.fetchall()[0][0]
                 return stub
 
+    # @time_of_function
     def get_channels_list(self):
         select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
         with self.connection.cursor() as cursor:

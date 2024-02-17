@@ -1,18 +1,22 @@
 import requests
 from bs4 import BeautifulSoup as bs
 from db_management_OOP import connection
+from profiler import time_of_function
 
 
 class TelegramPost:
     def __init__(self, channel_url, post_number):
         self.url = channel_url + f"/{post_number}"
+        self.post_text = self.get_text()
 
+    # @time_of_function
     def get_text(self):
         r = requests.get(self.url)
         soup = bs(r.text, "html.parser")
         post_text = str(soup.find_all(property="og:description"))[16:-30]
         return post_text
 
+    # @time_of_function
     def get_url(self):
         return self.url
 
@@ -31,17 +35,18 @@ class TelegramChannel:
     def check_channel_doc(url):
         return len(connection.select_channel_data(url)) > 0
 
+    # @time_of_function
     def check_new_posts(self):
-        post_list = True
+        is_post = True
         counter = self.last_post + 1
-        while post_list:
-            post_list = False
+        while is_post:
+            is_post = False
             for i in range(10):
                 post = TelegramPost(self.channel_url, counter)
-                post_text = post.get_text()
+                post_text = post.post_text
                 if post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter
-                    post_list = True
+                    is_post = True
                     connection.change_channel_last_post(self.channel_url, self.last_post)
                     yield post
                     counter += 1
