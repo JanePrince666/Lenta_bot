@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
-from parser import TelegramChannel
+from parser import TelegramChannel, TelegramPost
 from db_management_OOP import connection
 from profiler import time_of_function
 
@@ -19,7 +19,8 @@ bot = Bot(token=my_token)
 dp = Dispatcher()
 router = Router()
 
-scheduler = AsyncIOScheduler(timezone="Asia/Tbilisi")
+scheduler_update_post_list = AsyncIOScheduler(timezone="Asia/Tbilisi")
+scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
 # Хэндлер на команду /start
@@ -51,7 +52,8 @@ async def cmd_add_channel(message: types.Message):
         index = len(message.text) - len(url)
         last_post = int(message.text[-index:])
         url = url[:-1]
-        TelegramChannel(url, last_post)
+        stub = await TelegramPost(url, 1).get_text()
+        connection.create_new_channel(url, stub, last_post)
         await message.answer("Добавила!")
     else:
         await message.answer("Не телеграм-пост")
@@ -72,13 +74,14 @@ async def get_new_posts():
         await channel.check_new_posts()
 
 
-scheduler.add_job(get_new_posts, "interval", seconds=30)
-scheduler.add_job(post, "interval", seconds=10)
+scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=120)
+scheduler_for_posting.add_job(post, "interval", seconds=10)
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    scheduler.start()
+    scheduler_update_post_list.start()
+    scheduler_for_posting.start()
     # await get_new_posts()
     await dp.start_polling(bot)
 
