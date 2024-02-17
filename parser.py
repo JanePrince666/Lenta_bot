@@ -1,4 +1,5 @@
 import requests
+# noinspection PyPep8Naming
 from bs4 import BeautifulSoup as bs
 from db_management_OOP import connection
 
@@ -19,19 +20,18 @@ class TelegramPost:
 
 def check_new_posts(channel_url, last_post):
     stub = connection.get_channel_stub(channel_url)
-    post_list = []
+    is_post = False
     counter = last_post + 1
     for i in range(10):
         post = TelegramPost(channel_url, counter)
         post_text = post.get_text()
         if post_text != stub and len(post_text) > 0:
             last_post = counter
-            post_list.append(True)
+            is_post = True
             connection.change_channel_last_post(channel_url, last_post)
             yield post
             counter += 1
         else:
-            post_list.append(None)
             counter += 1
-    if any((i is not None for i in post_list)):
+    if is_post:
         check_new_posts(channel_url, last_post)
