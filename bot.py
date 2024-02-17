@@ -74,7 +74,7 @@ async def get_new_posts():
         await channel.check_new_posts()
 
 
-scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=120)
+scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=60)
 scheduler_for_posting.add_job(post, "interval", seconds=10)
 
 
