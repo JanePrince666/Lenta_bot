@@ -75,9 +75,9 @@ class MySQL:
                 yield i
 
     # @time_of_function
-    def add_to_posting_list(self, post):
+    def add_to_posting_list(self, post, post_text):
         url = post.get_url()
-        text = post.post_text
+        text = post_text
         insert_query = (f"INSERT INTO `posting_list` (post_url, post_text) "
                         f"VALUES ('{url}', '{text}') ")
         with self.connection.cursor() as cursor:

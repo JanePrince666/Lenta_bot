@@ -15,13 +15,14 @@ from profiler import time_of_function
 class TelegramPost:
     def __init__(self, channel_url, post_number):
         self.url = channel_url + f"/{post_number}"
-        self.post_text = asyncio.run(self.get_text())
+        # self.post_text = None
 
     # @time_of_function
     async def get_text(self):
         r = requests.get(self.url)
         soup = bs(r.text, "html.parser")
         post_text = str(soup.find_all(property="og:description"))[16:-30]
+        # self.post_text = post_text
         return post_text
 
     # @time_of_function
@@ -51,12 +52,12 @@ class TelegramChannel:
             is_post = False
             for i in range(10):
                 post = TelegramPost(self.channel_url, counter)
-                post_text = post.post_text
+                post_text = await post.get_text()
                 if post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter
                     is_post = True
                     connection.change_channel_last_post(self.channel_url, self.last_post)
-                    connection.add_to_posting_list(post)
+                    connection.add_to_posting_list(post, post_text)
                     counter += 1
                 else:
                     counter += 1
