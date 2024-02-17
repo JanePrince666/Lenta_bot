@@ -5,7 +5,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
-from parser import TelegramPost, check_new_posts
+from parser import TelegramChannel
 from db_management_OOP import connection
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -48,10 +48,9 @@ async def cmd_add_channel(message: types.Message):
             except ValueError:
                 url += i
         index = len(message.text) - len(url)
-        url = url[:-1]
-        stub = TelegramPost(url, 1).get_text()
         last_post = int(message.text[-index:])
-        connection.create_new_channel(url, stub, last_post)
+        url = url[:-1]
+        TelegramChannel(url, last_post)
         await message.answer("Добавила!")
     else:
         await message.answer("Не телеграм-пост")
@@ -60,8 +59,9 @@ async def cmd_add_channel(message: types.Message):
 
 # Функция получения новых постов
 async def get_latest_posts():
-    for url, last_post in connection.get_channels_list():
-        for post in check_new_posts(url, last_post):
+    for url, start_post in connection.get_channels_list():
+        channel = TelegramChannel(url, start_post)
+        for post in channel.check_new_posts():
             await bot.send_message(chat_id=CHANNEL_ID, text=post.get_url() + "\n" + post.get_text())
 
 
