@@ -7,6 +7,7 @@ from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID
 from parser import TelegramChannel
 from db_management_OOP import connection
+from profiler import time_of_function
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
@@ -58,19 +59,27 @@ async def cmd_add_channel(message: types.Message):
 
 
 # Функция получения новых постов
-async def get_latest_posts():
+# @time_of_function
+async def post():
+    for post_url, post_text in connection.get_posting_list():
+        await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
+        connection.del_from_posting_list(post_url)
+
+
+async def get_new_posts():
     for url, start_post in connection.get_channels_list():
         channel = TelegramChannel(url, start_post)
-        for post in channel.check_new_posts():
-            await bot.send_message(chat_id=CHANNEL_ID, text=post.get_url() + "\n" + post.post_text)
+        await channel.check_new_posts()
 
 
-scheduler.add_job(get_latest_posts, "interval", seconds=30)
+scheduler.add_job(get_new_posts, "interval", seconds=30)
+scheduler.add_job(post, "interval", seconds=10)
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
     scheduler.start()
+    # await get_new_posts()
     await dp.start_polling(bot)
 
 

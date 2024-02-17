@@ -1,5 +1,6 @@
 import mysql.connector
 from config import db_host, db_user_name, db_password
+# from parser import TelegramPost
 from profiler import time_of_function
 
 
@@ -73,6 +74,29 @@ class MySQL:
             for i in cursor.fetchall():
                 yield i
 
+    # @time_of_function
+    def add_to_posting_list(self, post):
+        url = post.get_url()
+        text = post.post_text
+        insert_query = (f"INSERT INTO `posting_list` (post_url, post_text) "
+                        f"VALUES ('{url}', '{text}') ")
+        with self.connection.cursor() as cursor:
+            cursor.execute(insert_query)
+            self.connection.commit()
+
+    def get_posting_list(self):
+        data = f"SELECT post_url, post_text FROM `posting_list` "
+        with self.connection.cursor() as cursor:
+            cursor.execute(data)
+            rows = cursor.fetchall()
+            return rows
+
+    def del_from_posting_list(self, post_url):
+        delete_query = f"DELETE FROM `posting_list` WHERE post_url = '{post_url}' "
+        with self.connection.cursor() as cursor:
+            cursor.execute(delete_query)
+            self.connection.commit()
+
     def select_all_data(self):
         select_all_rows = f"SELECT * FROM `ParsingChannels` "
         with self.connection.cursor() as cursor:
@@ -86,3 +110,4 @@ class MySQL:
 
 connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
 # print([i for i in connection.get_channels_list()])
+# print([i for i in connection.get_posting_list()])
