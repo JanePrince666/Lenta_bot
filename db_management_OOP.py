@@ -109,6 +109,4 @@ class MySQL:
 
 
 connection = MySQL(db_host, db_user_name, db_password, "lenta_db")
-# print([i for i in connection.get_channels_list()])
-# print([i for i in connection.get_posting_list()])
 connection2 = MySQL(db_host, db_user_name, db_password, "lenta_db")

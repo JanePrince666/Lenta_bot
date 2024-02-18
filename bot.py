@@ -95,7 +95,6 @@ scheduler_for_posting.add_job(post, "interval", seconds=10)
 
 # scheduler.add_job(get_new_posts, "interval", seconds=60)
 # scheduler.add_job(post, "interval", seconds=10)
-# t1 = multiprocessing.Process(target=post)
 t2 = multiprocessing.Process(target=get_new_posts)
 
 
