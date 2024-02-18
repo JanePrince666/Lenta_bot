@@ -2,8 +2,8 @@ import time
 import requests
 from bs4 import BeautifulSoup as bs
 
-from config import db_host, db_user_name, db_password
-from db_management_OOP import connection, MySQL
+from config import DATA_FOR_DATABASE
+from db_management_OOP import ParsingChannels, PostingList
 from profiler import time_of_function
 
 
@@ -28,7 +28,7 @@ class TelegramPost:
 class TelegramChannel:
     def __init__(self, url, start_post=50):
         if self.check_channel_doc(url):
-            self.channel_url, self.stub, self.last_post = connection.select_channel_data(url)[0]
+            self.channel_url, self.stub, self.last_post = ParsingChannels(*DATA_FOR_DATABASE).select_channel_data(url)[0]
         else:
             self.channel_url = url
             self.last_post = start_post
@@ -36,12 +36,12 @@ class TelegramChannel:
 
     @staticmethod
     def check_channel_doc(url):
-        return len(connection.select_channel_data(url)) > 0
+        return len(ParsingChannels(*DATA_FOR_DATABASE).select_channel_data(url)) > 0
 
     # @time_of_function
     def check_new_posts(self):
         is_post = True
-        connection1 = MySQL(db_host, db_user_name, db_password, "lenta_db")
+        connection1 = ParsingChannels(*DATA_FOR_DATABASE)
         counter = connection1.select_channel_data(self.channel_url)[0][2]
         while is_post:
             is_post = False
@@ -53,5 +53,5 @@ class TelegramChannel:
                     self.last_post = counter
                     is_post = True
                     connection1.change_channel_last_post(self.channel_url, self.last_post)
-                    connection1.add_to_posting_list(post, post_text)
+                    PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
             time.sleep(1)

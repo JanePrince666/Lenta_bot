@@ -7,9 +7,9 @@ import multiprocessing
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
-from config import my_token, CHANNEL_ID, db_host, db_user_name, db_password
+from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
 from parser import TelegramChannel, TelegramPost
-from db_management_OOP import connection, connection2, MySQL
+from db_management_OOP import ParsingChannels, PostingList
 from profiler import time_of_function
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -57,7 +57,7 @@ async def cmd_add_channel(message: types.Message):
         last_post = int(message.text[-index:])
         url = url[:-1]
         stub = await TelegramPost(url, 1).get_text()
-        connection2.create_new_channel(url, stub, last_post)
+        ParsingChannels(*DATA_FOR_DATABASE).create_new_channel(url, stub, last_post)
         await message.answer("Добавила!")
     else:
         await message.answer("Не телеграм-пост")
@@ -69,10 +69,11 @@ async def cmd_add_channel(message: types.Message):
 async def post():
     # print("начала постить")
     # while True:
-    new_posts = MySQL(db_host, db_user_name, db_password, "lenta_db").get_posting_list()
+    connection = PostingList(*DATA_FOR_DATABASE)
+    new_posts = connection.get_posting_list()
     for post_url, post_text in new_posts:
         await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
-        connection2.del_from_posting_list(post_url)
+        connection.del_from_posting_list(post_url)
         # print(f"время постинга поста: {datetime.datetime.now()}")
 
 
@@ -80,7 +81,7 @@ def get_new_posts():
     # print("начала парсить")
     while True:
         # start = datetime.datetime.now()
-        channel_list = MySQL(db_host, db_user_name, db_password, "lenta_db").get_channels_list()
+        channel_list = ParsingChannels(*DATA_FOR_DATABASE).get_channels_list()
         for url, start_post in channel_list:
             channel = TelegramChannel(url, start_post)
             # print(f"проверка канала {url}")
@@ -88,7 +89,8 @@ def get_new_posts():
             t.start()
         time.sleep(10)
         # end = datetime.datetime.now()
-        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
+        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время
+        # работы ' + str(end - start), file=open('report.txt', 'a'))
 
 
 # scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=60)
