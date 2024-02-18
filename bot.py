@@ -90,6 +90,7 @@ def get_new_posts():
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
+
 # scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=60)
 scheduler_for_posting.add_job(post, "interval", seconds=10)
 
