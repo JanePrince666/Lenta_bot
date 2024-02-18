@@ -42,10 +42,11 @@ class TelegramChannel:
     def check_new_posts(self):
         is_post = True
         connection1 = MySQL(db_host, db_user_name, db_password, "lenta_db")
-        counter = connection1.select_channel_data(self.channel_url)[0][2] + 1
+        counter = connection1.select_channel_data(self.channel_url)[0][2]
         while is_post:
             is_post = False
             for i in range(10):
+                counter += 1
                 post = TelegramPost(self.channel_url, counter)
                 post_text = post.post_text
                 if post_text != self.stub and len(post_text) > 0:
@@ -53,7 +54,4 @@ class TelegramChannel:
                     is_post = True
                     connection1.change_channel_last_post(self.channel_url, self.last_post)
                     connection1.add_to_posting_list(post, post_text)
-                    counter += 1
-                else:
-                    counter += 1
             time.sleep(1)
