@@ -1,7 +1,9 @@
 import asyncio
 import datetime
+import time
 import logging
 import sys
+import multiprocessing
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
@@ -65,16 +67,21 @@ async def cmd_add_channel(message: types.Message):
 # Функция получения новых постов
 # @time_of_function
 async def post():
+    print("начала постить")
     while True:
         for post_url, post_text in connection.get_posting_list():
             await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
             connection.del_from_posting_list(post_url)
+            print(f"время постинга поста: {datetime.datetime.now()}")
+            time.sleep(5)
 
 
 async def get_new_posts():
+    print("начала парсить")
     while True:
         for url, start_post in connection.get_channels_list():
             channel = TelegramChannel(url, start_post)
+            print(f"проверка канала {url}")
             await channel.check_new_posts()
 
 
@@ -83,6 +90,8 @@ async def get_new_posts():
 
 # scheduler.add_job(get_new_posts, "interval", seconds=60)
 # scheduler.add_job(post, "interval", seconds=10)
+t1 = await post()
+thread_pool = [Thread(target=await get_new_posts), Thread(target=post)]
 
 
 # Запуск процесса поллинга новых апдейтов
@@ -93,7 +102,10 @@ async def main():
     # await asyncio.gather(scheduler_update_post_list.start(), scheduler_for_posting.start())
     # scheduler.start()
     await dp.start_polling(bot)
-    await asyncio.gather(get_new_posts(), post())
+
+    for thr in thread_pool:
+        thr.start()
+    # await asyncio.gather(dp.start_polling(bot), get_new_posts(), post())
 
 
 if __name__ == "__main__":
