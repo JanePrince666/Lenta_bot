@@ -67,7 +67,7 @@ class TelegramChannel:
                     print("нашла пост!")
                 else:
                     counter += 1
-            time.sleep(10)
+            time.sleep(1)
 
 
 # print(asyncio.run(get_text("https://t.me/Ateobreaking/111948")))
