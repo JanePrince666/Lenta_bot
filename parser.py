@@ -54,7 +54,6 @@ class TelegramChannel:
                     connection1.change_channel_last_post(self.channel_url, self.last_post)
                     connection1.add_to_posting_list(post, post_text)
                     counter += 1
-                    print("нашла пост!")
                 else:
                     counter += 1
             time.sleep(1)
