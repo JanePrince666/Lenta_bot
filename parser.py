@@ -26,21 +26,24 @@ class TelegramPost:
 
 
 class TelegramChannel:
+    connection2ParsingChannels = ParsingChannels(*DATA_FOR_DATABASE)
+    connection2PostingList = PostingList(*DATA_FOR_DATABASE)
+
     def __init__(self, url, start_post=50):
-        self.connection2ParsingChannel = ParsingChannels(*DATA_FOR_DATABASE)
         if self.check_channel_doc(url):
-            self.channel_url, self.stub, self.last_post = self.connection2ParsingChannel.select_channel_data(url)[0]
+            self.channel_url, self.stub, self.last_post = self.connection2ParsingChannels.select_channel_data(url)[0]
         else:
             self.channel_url = url
             self.last_post = start_post
             self.stub = TelegramPost(url, start_post).post_text
-            self.connection2ParsingChannel.create_new_channel(self.channel_url, self.stub, self.last_post)
+            self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
 
+    # @staticmethod
     def check_channel_doc(self, url):
-        return len(self.connection2ParsingChannel.select_channel_data(url)) > 0
+        return len(self.connection2ParsingChannels.select_channel_data(url)) > 0
 
     # @time_of_function
-    def check_new_posts(self):
+    def check_new_posts(self, first_launch=True):
         is_post = True
         counter = self.last_post
         while is_post:
@@ -52,5 +55,6 @@ class TelegramChannel:
                 if post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter
                     is_post = True
-                    self.connection2ParsingChannel.change_channel_last_post(self.channel_url, self.last_post)
-                    PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+                    ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
+                    if first_launch:
+                        PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)

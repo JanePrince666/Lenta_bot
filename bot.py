@@ -78,16 +78,18 @@ async def post():
 
 
 def get_new_posts():
+    first_launch = True
     # print("начала парсить")
     while True:
         # start = datetime.datetime.now()
-        channel_list = ParsingChannels(*DATA_FOR_DATABASE).get_channels_list()
+        channel_list = list(ParsingChannels(*DATA_FOR_DATABASE).get_channels_list())
         for url, start_post in channel_list:
             channel = TelegramChannel(url, start_post)
             # print(f"проверка канала {url}")
-            t = multiprocessing.Process(target=channel.check_new_posts)
+            t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch, ))
             t.start()
         time.sleep(10)
+        first_launch = False
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время
         # работы ' + str(end - start), file=open('report.txt', 'a'))
