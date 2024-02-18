@@ -73,7 +73,7 @@ async def post():
     for post_url, post_text in new_posts:
         await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
         connection2.del_from_posting_list(post_url)
-        print(f"время постинга поста: {datetime.datetime.now()}")
+        # print(f"время постинга поста: {datetime.datetime.now()}")
 
 
 def get_new_posts():

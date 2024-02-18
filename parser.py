@@ -1,19 +1,10 @@
 import time
-
 import requests
-import asyncio
 from bs4 import BeautifulSoup as bs
 
 from config import db_host, db_user_name, db_password
 from db_management_OOP import connection, MySQL
 from profiler import time_of_function
-
-
-# async def get_text(url):
-#     r = requests.get(url)
-#     soup = bs(r.text, "html.parser")
-#     post_text = str(soup.find_all(property="og:description"))[16:-30]
-#     return post_text
 
 
 class TelegramPost:
@@ -47,10 +38,9 @@ class TelegramChannel:
     def check_channel_doc(url):
         return len(connection.select_channel_data(url)) > 0
 
-    @time_of_function
+    # @time_of_function
     def check_new_posts(self):
         is_post = True
-        # counter = self.last_post + 1
         connection1 = MySQL(db_host, db_user_name, db_password, "lenta_db")
         counter = connection1.select_channel_data(self.channel_url)[0][2] + 1
         while is_post:
@@ -68,8 +58,3 @@ class TelegramChannel:
                 else:
                     counter += 1
             time.sleep(1)
-
-
-# print(asyncio.run(get_text("https://t.me/Ateobreaking/111948")))
-# a = TelegramChannel("https://t.me/komcitynews", 46748).get_stub()
-# print(a.stub)
