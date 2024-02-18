@@ -54,4 +54,4 @@ class TelegramChannel:
                     is_post = True
                     connection1.change_channel_last_post(self.channel_url, self.last_post)
                     PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
-            time.sleep(1)
+
