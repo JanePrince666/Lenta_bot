@@ -58,3 +58,5 @@ class TelegramChannel:
                     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
                     if not first_launch:
                         PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+
+# что-нибудь
