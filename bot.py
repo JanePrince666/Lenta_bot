@@ -56,7 +56,7 @@ async def cmd_add_channel(message: types.Message):
         index = len(message.text) - len(url)
         last_post = int(message.text[-index:])
         url = url[:-1]
-        stub = await TelegramPost(url, 1).get_text()
+        stub = TelegramPost(url, 1).get_text()
         ParsingChannels(*DATA_FOR_DATABASE).create_new_channel(url, stub, last_post)
         await message.answer("Добавила!")
     else:
