@@ -105,8 +105,8 @@ class ParsingChannels(MySQL):
         select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
         with self.connection.cursor() as cursor:
             cursor.execute(select_all_channel)
-            for i in cursor.fetchall():
-                yield i
+            channels = [i for i in cursor.fetchall()]
+            return channels
 
 
 class Users(MySQL):
@@ -158,8 +158,7 @@ class PostingList(MySQL):
         """
         url = post.get_url()
         text = post_text
-        insert_query = (f"INSERT INTO `posting_list` (post_url, post_text) "
-                        f"VALUES ('{url}', '{text}') ")
+        insert_query = f"INSERT INTO `posting_list` (post_url, post_text) VALUES ('{url}', '{text}') "
         with self.connection.cursor() as cursor:
             cursor.execute(insert_query)
             self.connection.commit()
