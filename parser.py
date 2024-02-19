@@ -1,3 +1,4 @@
+import datetime
 import time
 import requests
 from bs4 import BeautifulSoup as bs
@@ -17,8 +18,7 @@ class TelegramPost:
         r = requests.get(self.url)
         soup = bs(r.text, "html.parser")
         post_text = str(soup.find_all(property="og:description"))[16:-30]
-        self.post_text = post_text
-        return self.post_text
+        return post_text
 
     # @time_of_function
     def get_url(self):
@@ -30,20 +30,20 @@ class TelegramChannel:
     connection2PostingList = PostingList(*DATA_FOR_DATABASE)
 
     def __init__(self, url, start_post=50):
-        if self.check_channel_doc(url):
-            self.channel_url, self.stub, self.last_post = self.connection2ParsingChannels.select_channel_data(url)[0]
-        else:
-            self.channel_url = url
-            self.last_post = start_post
-            self.stub = TelegramPost(url, start_post).post_text
-            self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
+        # if self.check_channel_doc(url):
+        #     self.channel_url, self.stub, self.last_post = self.connection2ParsingChannels.select_channel_data(url)[0]
+        # else:
+        self.channel_url = url
+        self.last_post = start_post
+        self.stub = TelegramPost(url, 1).post_text
+        self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
 
     # @staticmethod
     def check_channel_doc(self, url):
         return len(self.connection2ParsingChannels.select_channel_data(url)) > 0
 
     # @time_of_function
-    def check_new_posts(self, first_launch=True):
+    def check_new_posts(self, first_launch):
         is_post = True
         counter = self.last_post
         while is_post:
