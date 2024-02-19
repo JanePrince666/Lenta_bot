@@ -26,6 +26,8 @@ class TelegramPost:
 
 
 class TelegramChannel:
+    connection2ParsingChannels = ParsingChannels(*DATA_FOR_DATABASE)
+    connection2PostingList = PostingList(*DATA_FOR_DATABASE)
 
     def __init__(self, url, start_post=50):
         # if self.check_channel_doc(url):
