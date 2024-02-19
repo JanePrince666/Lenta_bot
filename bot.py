@@ -1,10 +1,13 @@
 import asyncio
 import datetime
+import random
 import re
 import time
 import logging
 import sys
 import multiprocessing
+from itertools import zip_longest
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
@@ -49,12 +52,9 @@ async def cmd_add_channel(message: types.Message):
         last_post = int(re.search("\/\d+", message.text).group()[1:])
         url = re.search("https:\/\/t\.me\/\w+", message.text).group()
         stub = TelegramPost(url, 1).get_text()
-        print(url, stub, last_post)
+        # print(url, stub, last_post)
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         answer = connection.create_new_channel(url, stub, last_post)
-        if answer == "Ошибка при получении данных":
-            stub = TelegramPost(url, last_post+1000).get_text()
-            answer = connection.create_new_channel(url, stub, last_post)
         await message.answer(answer)
     else:
         await message.answer("Не телеграм-пост")
@@ -81,14 +81,22 @@ def get_new_posts():
         # start = datetime.datetime.now()
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         channel_list = connection.get_channels_list()
-        for url, stub, start_post in channel_list:
-            channel = TelegramChannel(url, stub, start_post)
-            # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
-            t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
-            t.start()
+        random.shuffle(channel_list)
+        i_ = iter(channel_list)
+        channel_list = list(zip_longest(i_, i_, i_, i_, i_))
+        for cont in channel_list:
+            while None in cont:
+                cont = cont[:-1]
+            for url, stub, start_post in cont:
+                time.sleep(random.random())
+                channel = TelegramChannel(url, stub, start_post)
+                # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
+                t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
+                t.start()
+            time.sleep(0.5)
             # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
         first_launch = False
-        time.sleep(15)
+        time.sleep(10)
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время
         # работы ' + str(end - start), file=open('report.txt', 'a'))
