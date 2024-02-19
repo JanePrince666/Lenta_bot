@@ -29,14 +29,14 @@ class TelegramChannel:
     connection2ParsingChannels = ParsingChannels(*DATA_FOR_DATABASE)
     connection2PostingList = PostingList(*DATA_FOR_DATABASE)
 
-    def __init__(self, url, start_post=50):
+    def __init__(self, url, stub, start_post=50):
         # if self.check_channel_doc(url):
         #     self.channel_url, self.stub, self.last_post = self.connection2ParsingChannels.select_channel_data(url)[0]
         # else:
         self.channel_url = url
         self.last_post = start_post
-        self.stub = TelegramPost(url, 1).post_text
-        self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
+        self.stub = stub
+        # self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
 
     # @staticmethod
     def check_channel_doc(self, url):
@@ -56,10 +56,8 @@ class TelegramChannel:
                     self.last_post = counter
                     is_post = True
                     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
-                    # self.connection2ParsingChannels.change_channel_last_post(self.channel_url, self.last_post)
                     if not first_launch:
                         PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
-                        # self.connection2PostingList.add_to_posting_list(post, post_text)
         # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}")
 
 # что-нибудь

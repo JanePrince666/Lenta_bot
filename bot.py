@@ -23,11 +23,7 @@ bot = Bot(token=my_token)
 dp = Dispatcher()
 router = Router()
 
-scheduler_update_post_list = AsyncIOScheduler(timezone="Asia/Tbilisi")
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
-
-
-# scheduler = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
 # Хэндлер на команду /start
@@ -53,8 +49,13 @@ async def cmd_add_channel(message: types.Message):
         last_post = int(re.search("\/\d+", message.text).group()[1:])
         url = re.search("https:\/\/t\.me\/\w+", message.text).group()
         stub = TelegramPost(url, 1).get_text()
-        ParsingChannels(*DATA_FOR_DATABASE).create_new_channel(url, stub, last_post)
-        await message.answer("Добавила!")
+        print(url, stub, last_post)
+        connection = ParsingChannels(*DATA_FOR_DATABASE)
+        answer = connection.create_new_channel(url, stub, last_post)
+        if answer == "Ошибка при получении данных":
+            stub = TelegramPost(url, last_post+1000).get_text()
+            answer = connection.create_new_channel(url, stub, last_post)
+        await message.answer(answer)
     else:
         await message.answer("Не телеграм-пост")
         await message.delete()
@@ -62,29 +63,27 @@ async def cmd_add_channel(message: types.Message):
 
 # Функция получения новых постов
 # @time_of_function
-# async def post():
-#     # print("начала постить")
-#     # while True:
-#     connection = PostingList(*DATA_FOR_DATABASE)
-#     new_posts = connection.get_posting_list()
-#     for post_url, post_text in new_posts:
-#         await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
-#         connection.del_from_posting_list(post_url)
+async def post():
+    # print("начала постить")
+    # while True:
+    connection = PostingList(*DATA_FOR_DATABASE)
+    new_posts = connection.get_posting_list()
+    for post_url, post_text in new_posts:
+        await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
+        connection.del_from_posting_list(post_url)
 # print(f"время постинга поста: {datetime.datetime.now()}")
 
 
 def get_new_posts():
     first_launch = True
-    # # print("начала парсить")
-
+    # print("начала парсить")
     while True:
         # start = datetime.datetime.now()
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         channel_list = connection.get_channels_list()
-        for url, start_post in channel_list:
-            channel = TelegramChannel(url, start_post)
+        for url, stub, start_post in channel_list:
+            channel = TelegramChannel(url, stub, start_post)
             # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
-            # channel.check_new_posts(first_launch)
             t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
             t.start()
             # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
@@ -95,28 +94,16 @@ def get_new_posts():
         # работы ' + str(end - start), file=open('report.txt', 'a'))
 
 
-# scheduler_update_post_list.add_job(get_new_posts, "interval", seconds=15)
-# scheduler_for_posting.add_job(post, "interval", seconds=10)
+scheduler_for_posting.add_job(post, "interval", seconds=10)
 
-# scheduler.add_job(get_new_posts, "interval", seconds=60)
-# scheduler.add_job(post, "interval", seconds=10)
 t2 = multiprocessing.Process(target=get_new_posts)
 
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    # get_new_posts()
-    # scheduler_update_post_list.start()
     t2.start()
-    # scheduler_for_posting.start()
-    # await get_new_posts()
-    # await asyncio.gather(scheduler_update_post_list.start(), scheduler_for_posting.start())
-    # scheduler.start()
+    scheduler_for_posting.start()
     await dp.start_polling(bot)
-
-    # t1.start()
-
-    # await asyncio.gather(dp.start_polling(bot), post())
 
 
 if __name__ == "__main__":

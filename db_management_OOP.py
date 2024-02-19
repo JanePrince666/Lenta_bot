@@ -35,12 +35,17 @@ class ParsingChannels(MySQL):
         :param url: telegram channel url
         :param last_post_number: int
         """
+        if type(url) != str or len(url) == 0 or type(stub) != str or len(stub) == 0 or type(last_post_number) != int:
+            return "Ошибка при получении данных"
         if not self.check_url(url):
             insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
                             f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
             with self.connection.cursor() as cursor:
                 cursor.execute(insert_query)
                 self.connection.commit()
+            return "Добавила!"
+        else:
+            return "Уже есть в базе данных"
 
     # @time_of_function
     def select_channel_data(self, url: str):
@@ -98,11 +103,11 @@ class ParsingChannels(MySQL):
     # @time_of_function
     def get_channels_list(self):
         """
-        returns a generator of a list of all telegram channels in the database
+        returns a list of a list of all telegram channels in the database
 
         :return: generator(tuple(tg_channel_data))
         """
-        select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
+        select_all_channel = f"SELECT url, stub, last_post_number FROM `ParsingChannels` "
         with self.connection.cursor() as cursor:
             cursor.execute(select_all_channel)
             channels = [i for i in cursor.fetchall()]
@@ -196,7 +201,6 @@ class MonitoredTelegramChannels(MySQL):
 
     def del_from_monitored(self, url, channel_id):
         pass
-
 
 # connection = PostingList(*DATA_FOR_DATABASE).get_posting_list()
 # print(connection)
