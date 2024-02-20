@@ -6,7 +6,6 @@ import time
 import logging
 import sys
 import multiprocessing
-from itertools import zip_longest
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
@@ -65,7 +64,6 @@ async def cmd_add_channel(message: types.Message):
 # @time_of_function
 async def post():
     # print("начала постить")
-    # while True:
     connection = PostingList(*DATA_FOR_DATABASE)
     new_posts = connection.get_posting_list()
     for post_url, post_text in new_posts:
@@ -81,19 +79,12 @@ def get_new_posts():
         # start = datetime.datetime.now()
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         channel_list = connection.get_channels_list()
-        # random.shuffle(channel_list)
-        # i_ = iter(channel_list)
-        # channel_list = list(zip_longest(i_, i_, i_, i_, i_))
-        # for cont in channel_list:
-        #     while None in cont:
-        #         cont = cont[:-1]
         for url, stub, start_post in channel_list:
             # time.sleep(random.randint(0,5))
             channel = TelegramChannel(url, stub, start_post)
             # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
             t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
             t.start()
-        # time.sleep(0.5)
             # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
 
         if first_launch:
