@@ -96,8 +96,10 @@ def get_new_posts():
             t.start()
         # time.sleep(0.5)
             # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
-        first_launch = False
 
+        if first_launch:
+            time.sleep(120)
+        first_launch = False
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
         time.sleep(15)
