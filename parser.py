@@ -33,13 +33,9 @@ class TelegramChannel:
     connection2PostingList = PostingList(*DATA_FOR_DATABASE)
 
     def __init__(self, url, stub, start_post=50):
-        # if self.check_channel_doc(url):
-        #     self.channel_url, self.stub, self.last_post = self.connection2ParsingChannels.select_channel_data(url)[0]
-        # else:
         self.channel_url = url
         self.last_post = start_post
         self.stub = stub
-        # self.connection2ParsingChannels.create_new_channel(self.channel_url, self.stub, self.last_post)
 
     # @staticmethod
     def check_channel_doc(self, url):
@@ -61,6 +57,4 @@ class TelegramChannel:
                     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
                     if not first_launch:
                         PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
-        print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-
-# что-нибудь
+        # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
