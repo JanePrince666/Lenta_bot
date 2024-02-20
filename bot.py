@@ -90,8 +90,7 @@ def get_new_posts():
         for url, stub, start_post in channel_list:
             # time.sleep(random.randint(0,5))
             channel = TelegramChannel(url, stub, start_post)
-            channel.check_new_posts(first_launch)
-            # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
+            print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
             t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
             t.start()
         # time.sleep(0.5)
@@ -99,10 +98,12 @@ def get_new_posts():
 
         if first_launch:
             time.sleep(120)
-        first_launch = False
+            first_launch = False
+        else:
+            time.sleep(15)
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
-        time.sleep(15)
+
 
 
 scheduler_for_posting.add_job(post, "interval", seconds=10)
