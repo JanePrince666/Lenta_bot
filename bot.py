@@ -81,25 +81,26 @@ def get_new_posts():
         # start = datetime.datetime.now()
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         channel_list = connection.get_channels_list()
-        random.shuffle(channel_list)
-        i_ = iter(channel_list)
-        channel_list = list(zip_longest(i_, i_, i_, i_, i_))
-        for cont in channel_list:
-            while None in cont:
-                cont = cont[:-1]
-            for url, stub, start_post in cont:
-                time.sleep(random.random())
-                channel = TelegramChannel(url, stub, start_post)
-                # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
-                t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
-                t.start()
-            time.sleep(0.5)
+        # random.shuffle(channel_list)
+        # i_ = iter(channel_list)
+        # channel_list = list(zip_longest(i_, i_, i_, i_, i_))
+        # for cont in channel_list:
+        #     while None in cont:
+        #         cont = cont[:-1]
+        for url, stub, start_post in channel_list:
+            # time.sleep(random.randint(0,5))
+            channel = TelegramChannel(url, stub, start_post)
+            channel.check_new_posts(first_launch)
+            # print(f"проверка канала {url} начата в {datetime.datetime.now()}")
+            t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
+            t.start()
+        # time.sleep(0.5)
             # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
         first_launch = False
-        time.sleep(10)
+
         # end = datetime.datetime.now()
-        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время
-        # работы ' + str(end - start), file=open('report.txt', 'a'))
+        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
+        time.sleep(15)
 
 
 scheduler_for_posting.add_job(post, "interval", seconds=10)

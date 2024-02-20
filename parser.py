@@ -1,10 +1,12 @@
 import datetime
+import random
 import time
 import requests
 from bs4 import BeautifulSoup as bs
 
 from config import DATA_FOR_DATABASE
 from db_management_OOP import ParsingChannels, PostingList
+from proxies import proxies
 from profiler import time_of_function
 
 
@@ -15,7 +17,8 @@ class TelegramPost:
 
     # @time_of_function
     def get_text(self):
-        r = requests.get(self.url)
+        proxy = dict([random.choice(proxies)])
+        r = requests.get(self.url, proxies=proxy)
         soup = bs(r.text, "html.parser")
         post_text = str(soup.find_all(property="og:description"))[16:-30]
         return post_text
@@ -58,6 +61,6 @@ class TelegramChannel:
                     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
                     if not first_launch:
                         PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
-        # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}")
+        print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
 
 # что-нибудь
