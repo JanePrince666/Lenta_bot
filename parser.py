@@ -10,6 +10,14 @@ from proxies import proxies
 from profiler import time_of_function
 
 
+def pars_page(url):
+    proxy = dict([random.choice(proxies)])
+    r = requests.get(url, proxies=proxy)
+    soup = bs(r.text, "html.parser")
+    is_tg_stub = str(soup.find_all(class_="tgme_page_description"))
+    return soup, is_tg_stub
+
+
 class TelegramPost:
     def __init__(self, channel_url, post_number):
         self.url = channel_url + f"/{post_number}"
@@ -17,9 +25,9 @@ class TelegramPost:
 
     # @time_of_function
     def get_text(self):
-        proxy = dict([random.choice(proxies)])
-        r = requests.get(self.url, proxies=proxy)
-        soup = bs(r.text, "html.parser")
+        soup, is_tg_stub = pars_page(self.url)
+        while "If you have <strong>Telegram</strong>, you can contact" in is_tg_stub:
+            soup, is_tg_stub = pars_page(self.url)
         post_text = str(soup.find_all(property="og:description"))[16:-30]
         return post_text
 
