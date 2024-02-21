@@ -17,7 +17,15 @@ class MySQL:
             database=db_name,
         )
 
+    def do_commit(self, new_data):
+        with self.connection.cursor() as cursor:
+            cursor.execute(new_data)
+            self.connection.commit()
 
+    def get_data_from_database(self, inquiry):
+        with self.connection.cursor() as cursor:
+            cursor.execute(inquiry)
+            return cursor.fetchall()
 
     def __del__(self):
         """
@@ -44,9 +52,7 @@ class ParsingChannels(MySQL):
         else:
             insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
                             f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
-            with self.connection.cursor() as cursor:
-                cursor.execute(insert_query)
-                self.connection.commit()
+            self.do_commit(insert_query)
             return "Добавила!"
 
     # @time_of_function
@@ -59,10 +65,8 @@ class ParsingChannels(MySQL):
         """
         select_channel_rows = (f"SELECT url, stub, last_post_number FROM `ParsingChannels`"
                                f"WHERE url = '{url}' ")
-        with self.connection.cursor() as cursor:
-            cursor.execute(select_channel_rows)
-            rows = cursor.fetchall()
-            return rows
+        rows = self.get_data_from_database(select_channel_rows)
+        return rows
 
     # @time_of_function
     def check_url(self, url: str):
@@ -83,9 +87,7 @@ class ParsingChannels(MySQL):
         """
         if self.check_url(url):
             change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
-            with self.connection.cursor() as cursor:
-                cursor.execute(change_query)
-                self.connection.commit()
+            self.do_commit(change_query)
 
     # @time_of_function
     def get_channel_stub(self, url: str):
@@ -97,10 +99,8 @@ class ParsingChannels(MySQL):
         if self.check_url(url):
             select_channel_stub = (f"SELECT stub FROM `ParsingChannels`"
                                    f"WHERE url = '{url}' ")
-            with self.connection.cursor() as cursor:
-                cursor.execute(select_channel_stub)
-                stub = cursor.fetchall()[0][0]
-                return stub
+            stub = self.get_data_from_database(select_channel_stub)[0][0]
+            return stub
 
     # @time_of_function
     def get_channels_list(self):
@@ -110,10 +110,8 @@ class ParsingChannels(MySQL):
         :return: generator(tuple(tg_channel_data))
         """
         select_all_channel = f"SELECT url, stub, last_post_number FROM `ParsingChannels` "
-        with self.connection.cursor() as cursor:
-            cursor.execute(select_all_channel)
-            channels = [i for i in cursor.fetchall()]
-            return channels
+        channels = [i for i in self.get_data_from_database(select_all_channel)]
+        return channels
 
 
 class Users(MySQL):
@@ -126,9 +124,7 @@ class Users(MySQL):
         :type user_id: int
         """
         insert_query = f"INSERT INTO `users` (user_id, user_channel_id) VALUES ('{user_id}', '{user_channel_id}')"
-        with self.connection.cursor() as cursor:
-            cursor.execute(insert_query)
-            self.connection.commit()
+        self.do_commit(insert_query)
 
     def del_user_channel(self, channel_id: int):
         """
@@ -137,9 +133,7 @@ class Users(MySQL):
         :param channel_id: int
         """
         delete_query = f"DELETE FROM `users` WHERE user_channel_id = '{channel_id}'"
-        with self.connection.cursor() as cursor:
-            cursor.execute(delete_query)
-            self.connection.commit()
+        self.do_commit(delete_query)
 
     def del_user(self, user_id: int):
         """
@@ -148,9 +142,7 @@ class Users(MySQL):
         :type user_id: int
         """
         delete_query = f"DELETE FROM `users` WHERE user_id = '{user_id}'"
-        with self.connection.cursor() as cursor:
-            cursor.execute(delete_query)
-            self.connection.commit()
+        self.do_commit(delete_query)
 
 
 class PostingList(MySQL):
@@ -166,9 +158,7 @@ class PostingList(MySQL):
         url = post.get_url()
         text = post_text
         insert_query = f"INSERT INTO `posting_list` (post_url, post_text) VALUES ('{url}', '{text}') "
-        with self.connection.cursor() as cursor:
-            cursor.execute(insert_query)
-            self.connection.commit()
+        self.do_commit(insert_query)
 
     def get_posting_list(self):
         """
@@ -177,10 +167,8 @@ class PostingList(MySQL):
         :return: list(tuple(str))
         """
         data = f"SELECT post_url, post_text FROM `posting_list` "
-        with self.connection.cursor() as cursor:
-            cursor.execute(data)
-            rows = cursor.fetchall()
-            return rows
+        rows = self.get_data_from_database(data)
+        return rows
 
     def del_from_posting_list(self, post_url):
         """
@@ -189,9 +177,7 @@ class PostingList(MySQL):
         :type post_url: str
         """
         delete_query = f"DELETE FROM `posting_list` WHERE post_url = '{post_url}' "
-        with self.connection.cursor() as cursor:
-            cursor.execute(delete_query)
-            self.connection.commit()
+        self.do_commit(delete_query)
 
 
 class MonitoredTelegramChannels(MySQL):
