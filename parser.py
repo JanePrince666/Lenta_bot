@@ -53,15 +53,32 @@ class TelegramChannel:
     def check_channel_doc(self, url):
         return len(self.connection2ParsingChannels.select_channel_data(url)) > 0
 
-    # @time_of_function
+    # # @time_of_function
+    # def check_new_posts(self, first_launch):
+    #     is_post = True
+    #     counter = self.last_post
+    #     while is_post:
+    #         is_post = False
+    #         for i in range(10):
+    #             counter += 1
+    #             post = TelegramPost(self.channel_url, counter)
+    #             post_text = post.post_text
+    #             if post_text != self.stub and len(post_text) > 0:
+    #                 self.last_post = counter
+    #                 is_post = True
+    #                 ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
+    #                 if not first_launch:
+    #                     PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+    #     # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+
     def check_new_posts(self, first_launch):
         is_post = True
-        counter = self.last_post
+        counter = self.last_post + 1
         while is_post:
             is_post = False
-            for i in range(10):
-                counter += 1
-                post = TelegramPost(self.channel_url, counter)
+            ten_posts = (TelegramPost(self.channel_url, counter + i) for i in range(10))
+            # retry_counter = 0
+            for post in ten_posts:
                 post_text = post.post_text
                 if post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter

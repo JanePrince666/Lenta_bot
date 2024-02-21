@@ -17,6 +17,8 @@ class MySQL:
             database=db_name,
         )
 
+
+
     def __del__(self):
         """
         closes a database connection when it is no longer needed
