@@ -72,7 +72,7 @@ class TelegramChannel:
     #     # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
 
     def change_channel_stub(self):
-        stub = TelegramPost(self.channel_url, 1)
+        stub = TelegramPost(self.channel_url, 1).post_text
         ParsingChannels(*DATA_FOR_DATABASE).change_channel_stub(stub)
         self.last_post -= 10
         ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
@@ -82,10 +82,10 @@ class TelegramChannel:
         counter = self.last_post + 1
         retry_counter = 0
         previous_post_text = ""
+        for_posting = []
         while is_post:
             is_post = False
             ten_posts = (TelegramPost(self.channel_url, counter + i) for i in range(10))
-            for_posting = []
             for post in ten_posts:
                 post_text = post.post_text
                 if post_text == self.stub:
@@ -101,8 +101,8 @@ class TelegramChannel:
                 previous_post_text = post_text
             if retry_counter > 8:
                 self.change_channel_stub()
-            if not first_launch:
-                for post, post_text in for_posting:
-                    PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+        if not first_launch:
+            for post, post_text in for_posting:
+                PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
 
         # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
