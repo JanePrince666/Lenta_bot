@@ -71,19 +71,36 @@ class TelegramChannel:
     #                     PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
     #     # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
 
+    def change_channel_stub(self):
+        stub = TelegramPost(self.channel_url, 1)
+        ParsingChannels(*DATA_FOR_DATABASE).change_channel_stub(stub)
+        self.last_post -= 10
+        ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
+
     def check_new_posts(self, first_launch):
         is_post = True
         counter = self.last_post + 1
         while is_post:
             is_post = False
             ten_posts = (TelegramPost(self.channel_url, counter + i) for i in range(10))
-            # retry_counter = 0
+            retry_counter = 0
+            previous_post_text = ""
+            for_posting = []
             for post in ten_posts:
                 post_text = post.post_text
-                if post_text != self.stub and len(post_text) > 0:
+                if previous_post_text == post_text:
+                    retry_counter += 1
+                    continue
+                elif post_text != self.stub and len(post_text) > 0:
                     self.last_post = counter
                     is_post = True
+                    for_posting.append([post, post_text])
                     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
-                    if not first_launch:
-                        PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+                previous_post_text = post_text
+            if retry_counter > 8:
+                self.change_channel_stub()
+            if not first_launch:
+                for post, post_text in for_posting:
+                    PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
+
         # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))

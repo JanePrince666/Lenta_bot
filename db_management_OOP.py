@@ -89,6 +89,16 @@ class ParsingChannels(MySQL):
             change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
             self.do_commit(change_query)
 
+    def change_channel_stub(self, url: str, new_stub: str):
+        """
+        updates the stub for the telegram channel
+
+        :param new_stub: str        :type url:
+        """
+        if self.check_url(url):
+            change_query = f"UPDATE `ParsingChannels` SET stub = '{new_stub}' WHERE url = '{url}' "
+            self.do_commit(change_query)
+
     # @time_of_function
     def get_channel_stub(self, url: str):
         """
