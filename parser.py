@@ -80,15 +80,17 @@ class TelegramChannel:
     def check_new_posts(self, first_launch):
         is_post = True
         counter = self.last_post + 1
+        retry_counter = 0
+        previous_post_text = ""
         while is_post:
             is_post = False
             ten_posts = (TelegramPost(self.channel_url, counter + i) for i in range(10))
-            retry_counter = 0
-            previous_post_text = ""
             for_posting = []
             for post in ten_posts:
                 post_text = post.post_text
-                if previous_post_text == post_text:
+                if post_text == self.stub:
+                    continue
+                elif previous_post_text == post_text and post_text != self.stub:
                     retry_counter += 1
                     continue
                 elif post_text != self.stub and len(post_text) > 0:
