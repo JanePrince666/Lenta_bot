@@ -106,8 +106,6 @@ def get_new_posts():
                 first_launch = False
             else:
                 time.sleep(15)
-
-
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 

@@ -30,7 +30,7 @@ class TelegramPost:
         while "If you have <strong>Telegram</strong>, you can contact" in is_tg_stub:
             soup, is_tg_stub = pars_page(self.url)
             attempt_counter += 1
-            if attempt_counter == 10:
+            if attempt_counter == 5:
                 break
         post_text = str(soup.find_all(property="og:description"))[16:-30]
         return post_text
@@ -77,32 +77,34 @@ class TelegramChannel:
         self.last_post -= 10
         ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
 
+    def update_ParsingChannels(self):
+        ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
+
     def check_new_posts(self, first_launch):
         is_post = True
-        counter = self.last_post + 1
+        is_post_number = self.last_post + 1
         retry_counter = 0
         previous_post_text = ""
         for_posting = []
         while is_post:
             is_post = False
-            ten_posts = (TelegramPost(self.channel_url, counter + i) for i in range(10))
+            ten_posts = (TelegramPost(self.channel_url, is_post_number + i) for i in range(10))
             for post in ten_posts:
                 post_text = post.post_text
                 if post_text == self.stub:
                     continue
-                elif previous_post_text == post_text and post_text != self.stub:
+                elif previous_post_text == post_text:
                     retry_counter += 1
                     continue
-                elif post_text != self.stub and len(post_text) > 0:
-                    self.last_post = counter
+                elif len(post_text) > 0:
+                    self.last_post = is_post_number
                     is_post = True
                     for_posting.append([post, post_text])
-                    ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(self.channel_url, self.last_post)
                 previous_post_text = post_text
             if retry_counter > 8:
                 self.change_channel_stub()
+        self.update_ParsingChannels()
         if not first_launch:
             for post, post_text in for_posting:
                 PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post, post_text)
-
         # print(f"процесс проверки канала {self.channel_url} закончен в {datetime.datetime.now()}", file=open('report.txt', 'a'))
