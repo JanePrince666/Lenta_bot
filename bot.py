@@ -101,13 +101,13 @@ def get_new_posts():
                 t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
                 t.start()
                 # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
-            time.sleep(15)
+            if first_launch:
+                time.sleep(60)
+                first_launch = False
+            else:
+                time.sleep(15)
 
-        if first_launch:
-            time.sleep(60)
-            first_launch = False
-        else:
-            time.sleep(5)
+
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
