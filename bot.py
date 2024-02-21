@@ -76,26 +76,38 @@ async def post():
 # print(f"время постинга поста: {datetime.datetime.now()}")
 
 
+def get_channel_lisl():
+    connection = ParsingChannels(*DATA_FOR_DATABASE)
+    channel_list = connection.get_channels_list()
+    for i in range(10):
+        unit = []
+        for j in range(len(channel_list)):
+            if i + j < len(channel_list):
+                unit.append(channel_list[i + j])
+        yield unit
+
+
 def get_new_posts():
     first_launch = True
     # print("начала парсить")
     while True:
         # start = datetime.datetime.now()
-        connection = ParsingChannels(*DATA_FOR_DATABASE)
-        channel_list = connection.get_channels_list()
-        for url, stub, start_post in channel_list:
-            # time.sleep(random.randint(0,5))
-            channel = TelegramChannel(url, stub, start_post)
-            # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-            t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
-            t.start()
-            # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
+        channels = get_channel_lisl()
+        for unit in channels:
+            for url, stub, start_post in unit:
+                # time.sleep(random.randint(0,5))
+                channel = TelegramChannel(url, stub, start_post)
+                # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+                t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
+                t.start()
+                # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
+            time.sleep(15)
 
         if first_launch:
             time.sleep(60)
             first_launch = False
         else:
-            time.sleep(15)
+            time.sleep(5)
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
