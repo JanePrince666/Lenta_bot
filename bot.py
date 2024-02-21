@@ -79,8 +79,8 @@ async def post():
 def get_channel_lisl():
     connection = ParsingChannels(*DATA_FOR_DATABASE)
     channel_list = connection.get_channels_list()
-    for i in range(0, len(channel_list), 10):
-        unit = channel_list[i:i + 10]
+    for i in range(0, len(channel_list), 20):
+        unit = channel_list[i:i + 20]
         yield unit
 
 
