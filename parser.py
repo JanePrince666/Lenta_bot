@@ -26,8 +26,12 @@ class TelegramPost:
     # @time_of_function
     def get_text(self):
         soup, is_tg_stub = pars_page(self.url)
+        attempt_counter = 0
         while "If you have <strong>Telegram</strong>, you can contact" in is_tg_stub:
             soup, is_tg_stub = pars_page(self.url)
+            attempt_counter += 1
+            if attempt_counter == 10:
+                break
         post_text = str(soup.find_all(property="og:description"))[16:-30]
         return post_text
 

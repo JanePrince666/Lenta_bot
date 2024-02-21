@@ -96,7 +96,6 @@ def get_new_posts():
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
 
-
 scheduler_for_posting.add_job(post, "interval", seconds=10)
 
 t2 = multiprocessing.Process(target=get_new_posts)
