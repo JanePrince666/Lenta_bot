@@ -79,33 +79,31 @@ async def post():
 def get_channel_lisl():
     connection = ParsingChannels(*DATA_FOR_DATABASE)
     channel_list = connection.get_channels_list()
-    for i in range(10):
-        unit = []
-        for j in range(len(channel_list)):
-            if i + j < len(channel_list):
-                unit.append(channel_list[i + j])
+    for i in range(0, len(channel_list), 10):
+        unit = channel_list[i:i + 10]
         yield unit
 
 
 def get_new_posts():
     first_launch = True
-    # print("начала парсить")
+    print("начала парсить")
     while True:
         # start = datetime.datetime.now()
-        channels = get_channel_lisl()
+        channels = get_channel_lisl() #  [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]]
         for unit in channels:
             for url, stub, start_post in unit:
-                # time.sleep(random.randint(0,5))
+            #     # time.sleep(random.randint(0,5))
                 channel = TelegramChannel(url, stub, start_post)
-                # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+                print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
                 t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
                 t.start()
-                # print(f"проверка канала {url} закончена в {datetime.datetime.now()}")
+            # print(f"Отсечка в unit {datetime.datetime.now()}", file=open('report.txt', 'a'))
+                # print(f"проверка канала {url} закончена в {datetime.datetime.now()}", file=open('report.txt', 'a'))
             if first_launch:
-                time.sleep(60)
-                first_launch = False
+                time.sleep(30)
             else:
                 time.sleep(15)
+        first_launch = False
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
