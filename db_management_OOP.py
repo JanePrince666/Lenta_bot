@@ -37,15 +37,15 @@ class ParsingChannels(MySQL):
         """
         if type(url) != str or len(url) == 0 or type(stub) != str or len(stub) == 0 or type(last_post_number) != int:
             return "Ошибка при получении данных"
-        if not self.check_url(url):
+        if self.check_url(url):
+            return "Уже есть в базе данных"
+        else:
             insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
                             f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
             with self.connection.cursor() as cursor:
                 cursor.execute(insert_query)
                 self.connection.commit()
             return "Добавила!"
-        else:
-            return "Уже есть в базе данных"
 
     # @time_of_function
     def select_channel_data(self, url: str):

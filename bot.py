@@ -48,13 +48,17 @@ async def cmd_info(message: types.Message):
 @dp.message()
 async def cmd_add_channel(message: types.Message):
     if "https://t.me/" == message.text[:13]:
+        connection = ParsingChannels(*DATA_FOR_DATABASE)
         last_post = int(re.search("\/\d+", message.text).group()[1:])
         url = re.search("https:\/\/t\.me\/\w+", message.text).group()
-        stub = TelegramPost(url, 1).get_text()
-        # print(url, stub, last_post)
-        connection = ParsingChannels(*DATA_FOR_DATABASE)
-        answer = connection.create_new_channel(url, stub, last_post)
-        await message.answer(answer)
+        if connection.check_url(url):
+            await message.answer("Уже есть в базе данных")
+        else:
+            stub = TelegramPost(url, 1).get_text()
+            # print(url, stub, last_post)
+
+            answer = connection.create_new_channel(url, stub, last_post)
+            await message.answer(answer)
     else:
         await message.answer("Не телеграм-пост")
         await message.delete()
