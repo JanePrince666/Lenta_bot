@@ -88,7 +88,7 @@ def get_new_posts():
     first_launch = True
     # print("начала парсить")
     while True:
-        start = datetime.datetime.now()
+        # start = datetime.datetime.now()
         channels = get_channel_lisl()
         for unit in channels:
             for url, start_post in unit:
@@ -102,7 +102,7 @@ def get_new_posts():
             #     time.sleep(120)
             # else:
             time.sleep(10)
-        end = datetime.datetime.now()
+        # end = datetime.datetime.now()
         # print(f"{50*'-'}\nпроверка каналов закончена в {datetime.datetime.now()}\n общее время: {end-start}\n{50*'-'}", file=open('report.txt', 'a'))
         first_launch = False
         # end = datetime.datetime.now()
