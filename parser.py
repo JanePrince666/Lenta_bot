@@ -25,17 +25,14 @@ def get_posts(url):
     return posts
 
 
-# @time_of_function
+@time_of_function
 def pars_channel(url, last_post_number, first_launch):
     posts = get_posts(url)
     while len(posts) == 0:
-        tor_control_port_client.change_connection_ip(seconds_wait=10)
-        print("Получила новый IP", file=open('report.txt', 'a'))
+        tor_control_port_client.change_connection_ip(seconds_wait=5)
+        # print("Получила новый IP", file=open('report.txt', 'a'))
         posts = get_posts(url)
-
     last_post_number = last_post_number
-    text = ""
-    post_url = ""
     for post in posts:
         post_url_data = post['data-post']
         post_number = int(re.search('\/\d+', post_url_data).group()[1:])
