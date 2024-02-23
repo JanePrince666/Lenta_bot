@@ -11,7 +11,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters.command import Command, CommandStart
 from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
-from parser import TelegramChannel, TelegramPost
+from parser import pars_channel
 from db_management_OOP import ParsingChannels, PostingList
 from profiler import time_of_function
 
@@ -50,14 +50,14 @@ async def cmd_add_channel(message: types.Message):
     if "https://t.me/" == message.text[:13]:
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         last_post = int(re.search("\/\d+", message.text).group()[1:])
-        url = re.search("https:\/\/t\.me\/\w+", message.text).group()
+        channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
+        url = f"https://t.me/s/{channel_name}"
         if connection.check_url(url):
             await message.answer("Уже есть в базе данных")
         else:
-            stub = TelegramPost(url, 1).get_text()
             # print(url, stub, last_post)
 
-            answer = connection.create_new_channel(url, stub, last_post)
+            answer = connection.create_new_channel(url, last_post)
             await message.answer(answer)
     else:
         await message.answer("Не телеграм-пост")
@@ -86,23 +86,24 @@ def get_channel_lisl():
 
 def get_new_posts():
     first_launch = True
-    print("начала парсить")
+    # print("начала парсить")
     while True:
-        # start = datetime.datetime.now()
-        channels = get_channel_lisl() #  [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]]
+        start = datetime.datetime.now()
+        channels = get_channel_lisl()
         for unit in channels:
-            for url, stub, start_post in unit:
-            #     # time.sleep(random.randint(0,5))
-                channel = TelegramChannel(url, stub, start_post)
-                print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-                t = multiprocessing.Process(target=channel.check_new_posts, args=(first_launch,))
+            for url, start_post in unit:
+                # time.sleep(random.randint(0,5))
+                # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+                t = multiprocessing.Process(target=pars_channel, args=(url, start_post, first_launch, ))
                 t.start()
             # print(f"Отсечка в unit {datetime.datetime.now()}", file=open('report.txt', 'a'))
                 # print(f"проверка канала {url} закончена в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-            if first_launch:
-                time.sleep(30)
-            else:
-                time.sleep(15)
+            # if first_launch:
+            #     time.sleep(120)
+            # else:
+            time.sleep(20)
+        end = datetime.datetime.now()
+        print(f"проверка каналов закончена в {datetime.datetime.now()}\n общее время: {end-start}", file=open('report.txt', 'a'))
         first_launch = False
         # end = datetime.datetime.now()
         # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))

@@ -37,21 +37,20 @@ class MySQL:
 class ParsingChannels(MySQL):
 
     # @time_of_function
-    def create_new_channel(self, url: str, stub: str, last_post_number: int):
+    def create_new_channel(self, url: str, last_post_number: int):
         """
         creates a new channel in the ParsingChannel table
 
-        :param stub: telegram channel stub
         :param url: telegram channel url
         :param last_post_number: int
         """
-        if type(url) != str or len(url) == 0 or type(stub) != str or len(stub) == 0 or type(last_post_number) != int:
+        if type(url) != str or len(url) == 0 or type(last_post_number) != int:
             return "Ошибка при получении данных"
         if self.check_url(url):
             return "Уже есть в базе данных"
         else:
-            insert_query = (f"INSERT INTO `ParsingChannels` (url, stub, last_post_number) "
-                            f"VALUES ('{url}', '{stub}', '{last_post_number}') ")
+            insert_query = (f"INSERT INTO `ParsingChannels` (url, last_post_number) "
+                            f"VALUES ('{url}', '{last_post_number}') ")
             self.do_commit(insert_query)
             return "Добавила!"
 
@@ -63,7 +62,7 @@ class ParsingChannels(MySQL):
         :type url: str
         :return list(tuple(tg_channel_data))
         """
-        select_channel_rows = (f"SELECT url, stub, last_post_number FROM `ParsingChannels`"
+        select_channel_rows = (f"SELECT url, last_post_number FROM `ParsingChannels`"
                                f"WHERE url = '{url}' ")
         rows = self.get_data_from_database(select_channel_rows)
         return rows
@@ -89,28 +88,18 @@ class ParsingChannels(MySQL):
             change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
             self.do_commit(change_query)
 
-    def change_channel_stub(self, url: str, new_stub: str):
-        """
-        updates the stub for the telegram channel
-
-        :param new_stub: str        :type url:
-        """
-        if self.check_url(url):
-            change_query = f"UPDATE `ParsingChannels` SET stub = '{new_stub}' WHERE url = '{url}' "
-            self.do_commit(change_query)
-
     # @time_of_function
-    def get_channel_stub(self, url: str):
+    def get_last_post_number(self, url: str):
         """
-        returns the telegram channel stub by url
+        returns the telegram channel last_post_number by url
 
         :type url: str
         """
         if self.check_url(url):
-            select_channel_stub = (f"SELECT stub FROM `ParsingChannels`"
+            select_channel_stub = (f"SELECT last_post_number FROM `ParsingChannels`"
                                    f"WHERE url = '{url}' ")
-            stub = self.get_data_from_database(select_channel_stub)[0][0]
-            return stub
+            number = self.get_data_from_database(select_channel_stub)[0][0]
+            return number
 
     # @time_of_function
     def get_channels_list(self):
@@ -119,7 +108,7 @@ class ParsingChannels(MySQL):
 
         :return: generator(tuple(tg_channel_data))
         """
-        select_all_channel = f"SELECT url, stub, last_post_number FROM `ParsingChannels` "
+        select_all_channel = f"SELECT url, last_post_number FROM `ParsingChannels` "
         channels = [i for i in self.get_data_from_database(select_all_channel)]
         return channels
 
@@ -158,15 +147,13 @@ class Users(MySQL):
 class PostingList(MySQL):
 
     # @time_of_function
-    def add_to_posting_list(self, post, post_text):
+    def add_to_posting_list(self, url, text):
         """
         adds a post to the posting database table
 
-        :param post_text: str
-        :type post: object class TelegramPost
+        :param text: str
+        :type url: str
         """
-        url = post.get_url()
-        text = post_text
         insert_query = f"INSERT INTO `posting_list` (post_url, post_text) VALUES ('{url}', '{text}') "
         self.do_commit(insert_query)
 

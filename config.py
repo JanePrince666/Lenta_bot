@@ -7,3 +7,5 @@ db_password = "PrinceoFhalfblood3464_"
 db_name = "lenta_db"
 
 DATA_FOR_DATABASE = ("localhost", "jane", "PrinceoFhalfblood3464_", "lenta_db")
+
+tor_pass = "PrinceoFhalfblood3264"
