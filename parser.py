@@ -28,10 +28,14 @@ def get_posts(url):
 @time_of_function
 def pars_channel(url, last_post_number, first_launch):
     posts = get_posts(url)
+    attempt_counter = 0
     while len(posts) == 0:
+        attempt_counter += 1
         tor_control_port_client.change_connection_ip(seconds_wait=5)
         # print("Получила новый IP", file=open('report.txt', 'a'))
         posts = get_posts(url)
+        if attempt_counter > 5:
+            return "Ошибка при подключении к Тору"
     last_post_number = last_post_number
     for post in posts:
         post_url_data = post['data-post']
