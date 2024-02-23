@@ -25,7 +25,7 @@ def get_posts(url):
     return posts
 
 
-@time_of_function
+# @time_of_function
 def pars_channel(url, last_post_number, first_launch):
     posts = get_posts(url)
     attempt_counter = 0
