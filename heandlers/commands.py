@@ -9,27 +9,30 @@ router = Router()  # [1]
 # state = State()
 
 
+# Хэндлер на команду /start
 @router.message(StateFilter(None), Command("start"))  # [2]
 async def cmd_start(message: Message):
     await message.answer("Hello!")
     await message.delete()
 
 
+# Хэндлер на команду /info
 @router.message(StateFilter(None), Command("info"))
-async def cmd_start(message: Message):
-    await message.answer(
-        "Тестовый бот для FSM"
-    )
+async def cmd_info(message: Message):
+    await message.answer("Бот для создания собственной ленты")
+    await message.delete()
 
 
-@router.message(StateFilter(None), Command("add_channel"))
-async def cmd_start(message: Message, state: FSMContext):
+# Хэндлер на команду /add_channel_to_view
+@router.message(StateFilter(None), Command("add_channel_to_view"))
+async def cmd_add_channel_to_view(message: Message, state: FSMContext):
     await message.answer(
         "Введите ссылку на телеграм пост"
     )
     await state.set_state(BotState.adding_new_channel)
 
 
+# Хэндлер на команду /add_my_channel
 @router.message(StateFilter(None), Command("add_my_channel"))
 async def add_my_channel(message: Message, state: FSMContext):
     await message.answer(

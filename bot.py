@@ -43,35 +43,6 @@ class FSMFillForm(StatesGroup):
     adding_new_user_channel = State() # состояние добавления нового канала пользователя
 
 
-# Хэндлер на команду /start
-@dp.message(CommandStart())
-async def cmd_start(message: types.Message):
-    await message.answer("Hello!")
-    await message.delete()
-
-
-# Хэндлер на команду /info
-@dp.message(Command("info"))
-async def cmd_info(message: types.Message):
-    await message.answer("Бот для создания собственной ленты")
-    await message.delete()
-
-
-@dp.message(Command("add_channel"))
-async def cmd_add_channel(message: types.Message):
-    await message.answer("Пришлите ссылку на последний пост из канала для отслеживания")
-    await state.set_state(FSMFillForm.adding_new_channel)
-# Здесь должен быть хэндлер на прием id канала пользователя
-# @dp.channel_post()
-# async def handler_hi(massage):
-#     print(f"hi {massage.chat.id}, {massage}")
-#
-#
-# @dp.message()
-# async def handler4chat_hi(massage, chat_type="group"):
-#     print(f"hi {massage.chat.id}, {massage}")
-
-
 # Хэндлер на прием новых каналов от пользователя
 @dp.message()
 async def handler_channel(message: types.Message):
