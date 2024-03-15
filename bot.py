@@ -31,7 +31,6 @@ bot = Bot(token=my_token)
 # Диспетчер
 dp = Dispatcher(storage=storage)
 # Создаем "базу данных" пользователей
-user_dict: dict[int, dict[str, str | int | bool]] = {}
 router = Router()
 
 # Создаем задачу по времени
