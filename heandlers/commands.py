@@ -27,7 +27,7 @@ async def cmd_info(message: Message):
 @router.message(StateFilter(None), Command("add_channel_to_view"))
 async def cmd_add_channel_to_view(message: Message, state: FSMContext):
     await message.answer(
-        "Введите ссылку на телеграм пост"
+        "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
     )
     await state.set_state(BotState.adding_new_channel)
 
