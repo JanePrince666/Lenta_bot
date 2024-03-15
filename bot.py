@@ -25,6 +25,7 @@ bot = Bot(token=my_token)
 dp = Dispatcher()
 router = Router()
 
+# Создаем задачу по времени
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
