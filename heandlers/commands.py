@@ -19,7 +19,9 @@ async def cmd_start(message: Message):
 # Хэндлер на команду /info
 @router.message(StateFilter(None), Command("info"))
 async def cmd_info(message: Message):
-    await message.answer("Бот для создания собственной ленты")
+    await message.answer(
+        "Бот для создания собственной ленты"
+    )
     await message.delete()
 
 

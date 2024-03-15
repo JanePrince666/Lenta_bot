@@ -6,7 +6,7 @@ import sys
 import multiprocessing
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
@@ -18,9 +18,6 @@ from profiler import time_of_function
 
 # Объект бота
 bot = Bot(token=my_token)
-
-# Создаем задачу по времени
-scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
 # Функция постинга новых постов
@@ -36,7 +33,8 @@ async def post():
 
 # print(f"время постинга поста: {datetime.datetime.now()}")
 
-
+# Создаем задачу по времени
+scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 scheduler_for_posting.add_job(post, "interval", seconds=10)
 
 t2 = multiprocessing.Process(target=get_new_posts)
