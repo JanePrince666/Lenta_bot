@@ -8,25 +8,39 @@ import sys
 import multiprocessing
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aiogram import Bot, Dispatcher, Router, types
-from aiogram.filters.command import Command, CommandStart
+from aiogram import Bot, Dispatcher, Router, types, filters
+from aiogram.filters import Command, CommandStart, StateFilter, state
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import default_state, State, StatesGroup
+from aiogram.fsm.storage.memory import MemoryStorage
+
 from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
-from parser import pars_channel
+from parser import get_new_posts
 from db_management_OOP import ParsingChannels, PostingList
 from profiler import time_of_function
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
+# Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
+storage = MemoryStorage()
+
 # Объект бота
 bot = Bot(token=my_token)
 
 # Диспетчер
-dp = Dispatcher()
+dp = Dispatcher(storage=storage)
+# Создаем "базу данных" пользователей
+user_dict: dict[int, dict[str, str | int | bool]] = {}
 router = Router()
 
 # Создаем задачу по времени
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
+
+
+class FSMFillForm(StatesGroup):
+    adding_new_channel = State() # состояние добавления нового канала в канал пользователя
+    adding_new_user_channel = State() # состояние добавления нового канала пользователя
 
 
 # Хэндлер на команду /start
@@ -43,11 +57,24 @@ async def cmd_info(message: types.Message):
     await message.delete()
 
 
+@dp.message(Command("add_channel"))
+async def cmd_add_channel(message: types.Message):
+    await message.answer("Пришлите ссылку на последний пост из канала для отслеживания")
+    await state.set_state(FSMFillForm.adding_new_channel)
 # Здесь должен быть хэндлер на прием id канала пользователя
+# @dp.channel_post()
+# async def handler_hi(massage):
+#     print(f"hi {massage.chat.id}, {massage}")
+#
+#
+# @dp.message()
+# async def handler4chat_hi(massage, chat_type="group"):
+#     print(f"hi {massage.chat.id}, {massage}")
+
 
 # Хэндлер на прием новых каналов от пользователя
 @dp.message()
-async def cmd_add_channel(message: types.Message):
+async def handler_channel(message: types.Message):
     if "https://t.me/" == message.text[:13]:
         connection = ParsingChannels(*DATA_FOR_DATABASE)
         last_post = int(re.search("\/\d+", message.text).group()[1:])
@@ -74,40 +101,10 @@ async def post():
     for post_url, post_text in new_posts:
         await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
         connection.del_from_posting_list(post_url)
+
+
 # print(f"время постинга поста: {datetime.datetime.now()}")
 
-
-def get_channel_lisl():
-    connection = ParsingChannels(*DATA_FOR_DATABASE)
-    channel_list = connection.get_channels_list()
-    for i in range(0, len(channel_list), 20):
-        unit = channel_list[i:i + 20]
-        yield unit
-
-
-def get_new_posts():
-    first_launch = True
-    # print("начала парсить")
-    while True:
-        # start = datetime.datetime.now()
-        channels = get_channel_lisl()
-        for unit in channels:
-            for url, start_post in unit:
-                # time.sleep(random.randint(0,5))
-                # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-                t = multiprocessing.Process(target=pars_channel, args=(url, start_post, first_launch, ))
-                t.start()
-            # print(f"Отсечка в unit {datetime.datetime.now()}", file=open('report.txt', 'a'))
-                # print(f"проверка канала {url} закончена в {datetime.datetime.now()}", file=open('report.txt', 'a'))
-            # if first_launch:
-            #     time.sleep(120)
-            # else:
-            time.sleep(10)
-        # end = datetime.datetime.now()
-        # print(f"{50*'-'}\nпроверка каналов закончена в {datetime.datetime.now()}\n общее время: {end-start}\n{50*'-'}", file=open('report.txt', 'a'))
-        first_launch = False
-        # end = datetime.datetime.now()
-        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
 
 
 scheduler_for_posting.add_job(post, "interval", seconds=10)

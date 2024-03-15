@@ -3,6 +3,7 @@ import random
 import re
 import time
 import requests
+import multiprocessing
 from bs4 import BeautifulSoup as bs
 from tor_python_easy.tor_control_port_client import TorControlPortClient
 
@@ -51,3 +52,36 @@ def pars_channel(url, last_post_number, first_launch):
             if not first_launch:
                 PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post_url, text)
     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(url, last_post_number)
+
+
+def get_channel_lisl():
+    connection = ParsingChannels(*DATA_FOR_DATABASE)
+    channel_list = connection.get_channels_list()
+    for i in range(0, len(channel_list), 20):
+        unit = channel_list[i:i + 20]
+        yield unit
+
+
+def get_new_posts():
+    first_launch = True
+    # print("начала парсить")
+    while True:
+        # start = datetime.datetime.now()
+        channels = get_channel_lisl()
+        for unit in channels:
+            for url, start_post in unit:
+                # time.sleep(random.randint(0,5))
+                # print(f"проверка канала {url} начата в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+                t = multiprocessing.Process(target=pars_channel, args=(url, start_post, first_launch,))
+                t.start()
+            # print(f"Отсечка в unit {datetime.datetime.now()}", file=open('report.txt', 'a'))
+            # print(f"проверка канала {url} закончена в {datetime.datetime.now()}", file=open('report.txt', 'a'))
+            # if first_launch:
+            #     time.sleep(120)
+            # else:
+            time.sleep(10)
+        # end = datetime.datetime.now()
+        # print(f"{50*'-'}\nпроверка каналов закончена в {datetime.datetime.now()}\n общее время: {end-start}\n{50*'-'}", file=open('report.txt', 'a'))
+        first_launch = False
+        # end = datetime.datetime.now()
+        # print(f'цикл get_new_posts:\n   start: {start}\n    finish: {end}\n    Время работы ' + str(end - start), file=open('report.txt', 'a'))
