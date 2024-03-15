@@ -37,26 +37,6 @@ router = Router()
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
-# Хэндлер на прием новых каналов от пользователя
-@dp.message()
-async def handler_channel(message: types.Message):
-    if "https://t.me/" == message.text[:13]:
-        connection = ParsingChannels(*DATA_FOR_DATABASE)
-        last_post = int(re.search("\/\d+", message.text).group()[1:])
-        channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
-        url = f"https://t.me/s/{channel_name}"
-        if connection.check_url(url):
-            await message.answer("Уже есть в базе данных")
-        else:
-            # print(url, stub, last_post)
-
-            answer = connection.create_new_channel(url, last_post)
-            await message.answer(answer)
-    else:
-        await message.answer("Не телеграм-пост")
-        await message.delete()
-
-
 # Функция получения новых постов
 # @time_of_function
 async def post():
@@ -69,7 +49,6 @@ async def post():
 
 
 # print(f"время постинга поста: {datetime.datetime.now()}")
-
 
 
 scheduler_for_posting.add_job(post, "interval", seconds=10)
