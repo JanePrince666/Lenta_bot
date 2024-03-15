@@ -1,17 +1,12 @@
 import asyncio
 import datetime
 import random
-import re
-import time
 import logging
 import sys
 import multiprocessing
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from aiogram import Bot, Dispatcher, Router, types, filters
-from aiogram.filters import Command, CommandStart, StateFilter, state
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import default_state, State, StatesGroup
+from aiogram import Bot, Dispatcher, Router
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
