@@ -38,11 +38,6 @@ router = Router()
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 
 
-class FSMFillForm(StatesGroup):
-    adding_new_channel = State() # состояние добавления нового канала в канал пользователя
-    adding_new_user_channel = State() # состояние добавления нового канала пользователя
-
-
 # Хэндлер на прием новых каналов от пользователя
 @dp.message()
 async def handler_channel(message: types.Message):
