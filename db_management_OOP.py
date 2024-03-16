@@ -115,15 +115,26 @@ class ParsingChannels(MySQL):
 
 class Users(MySQL):
 
-    def add_user_and_user_channel(self, user_id: int, user_channel_id=None):
+    def add_user_and_user_channel(self, user_id: int, user_channel_id: int, channel_name: str) -> object:
         """
         adds the user and his channels for posting to the users table
 
-        :param user_channel_id: int or None
-        :type user_id: int
+        :param user_id: int
+        :param channel_name: str
+        :param user_channel_id: int
         """
-        insert_query = f"INSERT INTO `users` (user_id, user_channel_id) VALUES ('{user_id}', '{user_channel_id}')"
+        insert_query = f"INSERT INTO `users` (user_channel_id, user_id, channel_name) VALUES ('{user_channel_id}', '{user_id}', '{channel_name}')"
         self.do_commit(insert_query)
+
+    def get_user_channels(self, user_id: int):
+        """
+        return list of tuple of user_channel_id and channel_name
+        :type user_id: int
+        :return: list(tuple)
+        """
+        select_all_user_channels = f"SELECT user_channel_id, channel_name FROM `Users` WHERE user_id = '{user_id}'"
+        user_channels = [i for i in self.get_data_from_database(select_all_user_channels)]
+        return user_channels
 
     def del_user_channel(self, channel_id: int):
         """

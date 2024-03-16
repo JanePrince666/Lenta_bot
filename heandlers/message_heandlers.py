@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from bot import bot
 from heandlers.fsm import BotState
 from config import my_token, CHANNEL_ID, DATA_FOR_DATABASE
-from db_management_OOP import ParsingChannels
+from db_management_OOP import ParsingChannels, Users
 
 
 router = Router()  # [1]
@@ -16,6 +16,8 @@ router = Router()  # [1]
 
 @router.message(BotState.adding_my_channel)
 async def add_new_user_channel(message: Message, state: FSMContext):
+    Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
+                                                        message.forward_from_chat.full_name)
     await bot.send_message(chat_id=message.forward_from_chat.id, text=f"канал добавлен в каналы для постинга")
     await bot.send_message(chat_id=message.chat.id, text=f"канал добавлен в каналы для постинга")
     await state.clear()

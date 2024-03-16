@@ -3,6 +3,9 @@ from aiogram.fsm.state import State
 from aiogram.types import Message
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
+
+from db_management_OOP import Users
+from config import DATA_FOR_DATABASE
 from heandlers.fsm import BotState
 
 router = Router()  # [1]
@@ -20,7 +23,11 @@ async def cmd_start(message: Message):
 @router.message(StateFilter(None), Command("info"))
 async def cmd_info(message: Message):
     await message.answer(
-        "Бот для создания собственной ленты"
+        "Бот для создания собственной ленты\n"
+        "/info\n"
+        "/add_channel_to_view\n"
+        "/add_my_channel\n"
+        "/view_my_channels\n"
     )
     await message.delete()
 
@@ -43,3 +50,10 @@ async def add_my_channel(message: Message, state: FSMContext):
         "3. Перешлите пост из своего канала боту"
     )
     await state.set_state(BotState.adding_my_channel)
+
+
+@router.message(StateFilter(None), Command("view_my_channels"))
+async def view_my_channels(message: Message, state: FSMContext):
+    user_channels = dict(Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id))
+    answer = [user_channels[i] for i in user_channels]
+    await message.answer('\n'.join(answer))
