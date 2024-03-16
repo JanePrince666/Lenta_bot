@@ -132,7 +132,7 @@ class Users(MySQL):
         :type user_id: int
         :return: list(tuple)
         """
-        select_all_user_channels = f"SELECT user_channel_id, channel_name FROM `Users` WHERE user_id = '{user_id}'"
+        select_all_user_channels = f"SELECT user_channel_id, channel_name FROM `users` WHERE user_id = '{user_id}'"
         user_channels = [i for i in self.get_data_from_database(select_all_user_channels)]
         return user_channels
 
