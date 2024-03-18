@@ -18,10 +18,16 @@ class AddWatchedChannel(StatesGroup):
     adding_new_channel = State()
 
 
+answer = dict()
+
+
 # Хэндлер на команду /add_channel_to_watched
 @router.message(StateFilter(None), Command("add_channel_to_watched"))
 async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
-    user_channels = dict(Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id))
+    user_channels = Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id)
+
+    for i in user_channels:
+        answer[i[1]] = i[0]
     await message.answer(
         "Выберите канал, в который вы хотели бы получать новые посты"
     )
