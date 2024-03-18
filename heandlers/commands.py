@@ -38,7 +38,7 @@ async def view_my_channels(message: Message, state: FSMContext):
     await message.answer('\n'.join(answer))
 
 
-@router.message(Command("view_my_channels"))
+@router.message(Command("cancel"))
 @router.message(F.text.lower() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext):
     if state is None:

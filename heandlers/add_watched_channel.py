@@ -30,27 +30,29 @@ async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
 
 @router.message(AddWatchedChannel.selecting_user_channel)
 async def select_user_channel(message: Message, state: FSMContext):
-    await message.answer(
-        "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
-    )
-    await state.set_state(AddWatchedChannel.adding_new_channel)
+    if "cancel" or "отмена" not in message.text:
+        await message.answer(
+            "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
+        )
+        await state.set_state(AddWatchedChannel.adding_new_channel)
 
 
 @router.message(AddWatchedChannel.adding_new_channel)
 async def handler_channel(message: Message, state: FSMContext):
-    if "https://t.me/" == message.text[:13]:
-        connection = ParsingChannels(*DATA_FOR_DATABASE)
-        last_post = int(re.search("\/\d+", message.text).group()[1:])
-        channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
-        url = f"https://t.me/s/{channel_name}"
-        if connection.check_url(url):
-            await message.answer("Уже есть в базе данных")
-        else:
-            # print(url, stub, last_post)
+    if "cancel" or "отмена" not in message.text:
+        if "https://t.me/" == message.text[:13] :
+            connection = ParsingChannels(*DATA_FOR_DATABASE)
+            last_post = int(re.search("\/\d+", message.text).group()[1:])
+            channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
+            url = f"https://t.me/s/{channel_name}"
+            if connection.check_url(url):
+                await message.answer("Уже есть в базе данных")
+            else:
+                # print(url, stub, last_post)
 
-            answer = connection.create_new_channel(url, last_post)
-            await message.answer(answer)
-    else:
-        await message.answer("Не телеграм-пост")
-        await message.delete()
+                answer = connection.create_new_channel(url, last_post)
+                await message.answer(answer)
+        else:
+            await message.answer("Не телеграм-пост")
+            await message.delete()
     await state.clear()
