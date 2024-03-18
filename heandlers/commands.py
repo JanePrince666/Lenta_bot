@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 
 from db_management_OOP import Users
 from config import DATA_FOR_DATABASE
-from heandlers.fsm import BotState
 
 router = Router()  # [1]
 # state = State()
@@ -32,26 +31,6 @@ async def cmd_info(message: Message):
     await message.delete()
 
 
-# Хэндлер на команду /add_channel_to_watched
-@router.message(StateFilter(None), Command("add_channel_to_watched"))
-async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
-    await message.answer(
-        "Выберите канал, в который вы хотели бы получать новые посты"
-    )
-    await state.set_state(BotState.selecting_user_channel)
-
-
-# Хэндлер на команду /add_my_channel
-@router.message(StateFilter(None), Command("add_my_channel"))
-async def add_my_channel(message: Message, state: FSMContext):
-    await message.answer(
-        "1. Добавьте бота в канал для постинга отслеживаемых новостей в качестве администратора\n"
-        "2. Напишите пост в своем канале\n"
-        "3. Перешлите пост из своего канала боту"
-    )
-    await state.set_state(BotState.adding_my_channel)
-
-
 @router.message(StateFilter(None), Command("view_my_channels"))
 async def view_my_channels(message: Message, state: FSMContext):
     user_channels = dict(Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id))
@@ -62,4 +41,12 @@ async def view_my_channels(message: Message, state: FSMContext):
 @router.message(Command("view_my_channels"))
 @router.message(F.text.lower() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext):
-    await state.clear()
+    if state is None:
+        await message.answer(
+            "Вы не находитесь на стадии добавления своего канала или канала для отследивания"
+        )
+    else:
+        await message.answer(
+            "Добавление отменено"
+        )
+        await state.clear()
