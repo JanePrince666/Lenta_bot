@@ -24,6 +24,14 @@ async def add_new_user_channel(message: Message, state: FSMContext):
     # print(message)
 
 
+@router.message(BotState.selecting_user_channel)
+async def select_user_channel(message: Message, state: FSMContext):
+    await message.answer(
+        "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
+    )
+    await state.set_state(BotState.adding_new_channel)
+
+
 @router.message(BotState.adding_new_channel)
 async def handler_channel(message: Message, state: FSMContext):
     if "https://t.me/" == message.text[:13]:

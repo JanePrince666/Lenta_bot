@@ -25,20 +25,20 @@ async def cmd_info(message: Message):
     await message.answer(
         "Бот для создания собственной ленты\n"
         "/info\n"
-        "/add_channel_to_view\n"
+        "/add_channel_to_watched\n"
         "/add_my_channel\n"
         "/view_my_channels\n"
     )
     await message.delete()
 
 
-# Хэндлер на команду /add_channel_to_view
-@router.message(StateFilter(None), Command("add_channel_to_view"))
-async def cmd_add_channel_to_view(message: Message, state: FSMContext):
+# Хэндлер на команду /add_channel_to_watched
+@router.message(StateFilter(None), Command("add_channel_to_watched"))
+async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
     await message.answer(
-        "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
+        "Выберите канал, в который вы хотели бы получать новые посты"
     )
-    await state.set_state(BotState.adding_new_channel)
+    await state.set_state(BotState.selecting_user_channel)
 
 
 # Хэндлер на команду /add_my_channel
@@ -57,3 +57,9 @@ async def view_my_channels(message: Message, state: FSMContext):
     user_channels = dict(Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id))
     answer = [user_channels[i] for i in user_channels]
     await message.answer('\n'.join(answer))
+
+
+@router.message(Command("view_my_channels"))
+@router.message(F.text.lower() == "отмена")
+async def cmd_cancel(message: Message, state: FSMContext):
+    await state.clear()
