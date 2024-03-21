@@ -123,7 +123,7 @@ class Users(MySQL):
         :param channel_name: str
         :param user_channel_id: int
         """
-        insert_query = f"INSERT INTO `users` (user_channel_id, user_id, channel_name) VALUES ('{user_channel_id}', '{user_id}', '{channel_name}')"
+        insert_query = f"INSERT INTO `users` (user_channel_id, user_id, channel_name) VALUES ({user_channel_id}, {user_id}, '{channel_name}')"
         self.do_commit(insert_query)
 
     def get_user_channels(self, user_id: int):
@@ -132,7 +132,7 @@ class Users(MySQL):
         :type user_id: int
         :return: list(tuple)
         """
-        select_all_user_channels = f"SELECT user_channel_id, channel_name FROM `users` WHERE user_id = '{user_id}'"
+        select_all_user_channels = f"SELECT user_channel_id, channel_name FROM `users` WHERE user_id = {user_id}"
         user_channels = [i for i in self.get_data_from_database(select_all_user_channels)]
         return user_channels
 
@@ -142,7 +142,7 @@ class Users(MySQL):
 
         :param channel_id: int
         """
-        delete_query = f"DELETE FROM `users` WHERE user_channel_id = '{channel_id}'"
+        delete_query = f"DELETE FROM `users` WHERE user_channel_id = {channel_id}"
         self.do_commit(delete_query)
 
     def del_user(self, user_id: int):
@@ -151,21 +151,20 @@ class Users(MySQL):
 
         :type user_id: int
         """
-        delete_query = f"DELETE FROM `users` WHERE user_id = '{user_id}'"
+        delete_query = f"DELETE FROM `users` WHERE user_id = {user_id}"
         self.do_commit(delete_query)
 
 
 class PostingList(MySQL):
 
     # @time_of_function
-    def add_to_posting_list(self, url, text):
+    def add_to_posting_list(self, url, text, user_channel):
         """
         adds a post to the posting database table
 
-        :param text: str
-        :type url: str
+        :param text: str        :type url:
         """
-        insert_query = f"INSERT INTO `posting_list` (post_url, post_text) VALUES ('{url}', '{text}') "
+        insert_query = f"INSERT INTO `posting_list` (post_url, post_text, user_channel_id) VALUES ('{url}', '{text}', {user_channel}) "
         self.do_commit(insert_query)
 
     def get_posting_list(self):
@@ -174,7 +173,7 @@ class PostingList(MySQL):
 
         :return: list(tuple(str))
         """
-        data = f"SELECT post_url, post_text FROM `posting_list` "
+        data = f"SELECT post_url, post_text, user_channel_id FROM `posting_list` "
         rows = self.get_data_from_database(data)
         return rows
 
@@ -190,16 +189,38 @@ class PostingList(MySQL):
 
 class MonitoredTelegramChannels(MySQL):
     def add_to_monitored(self, url, channel_id):
-        insert_query = f"INSERT INTO `monitored_telegram_channels` (user_channel_id, tg_channel_url) VALUES ('{channel_id}', '{url}') "
-        self.do_commit(insert_query)
+        monitored_channels = self.get_subscribed_user_chanel_list(channel_id)
+        if url in monitored_channels:
+            return "Уже в канале"
+        else:
+            insert_query = f"INSERT INTO `monitored_telegram_channels` (user_channel_id, tg_channel_url) VALUES ({channel_id}, '{url}')"
+            self.do_commit(insert_query)
+            return "Добавила"
 
     def get_subscribed_user_chanel_list(self, user_channel_id):
-        data = f"SELECT tg_channel_url FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
-        rows = self.get_data_from_database(data)
-        return rows
+        data = (f"SELECT tg_channel_url FROM `monitored_telegram_channels` "
+                f"WHERE user_channel_id = {user_channel_id} ")
 
-    def del_from_monitored(self, url, channel_id):
-        pass
+        return [item[0] for item in self.get_data_from_database(data)]
 
-# connection = PostingList(*DATA_FOR_DATABASE).get_posting_list()
-# print(connection)
+    def get_user_channels_subscribed_on_tg_channel(self, tg_channel_url):
+        data = (f"SELECT user_channel_id FROM `monitored_telegram_channels` "
+                f"WHERE tg_channel_url = '{tg_channel_url}' ")
+        return [item[0] for item in self.get_data_from_database(data)]
+
+    def del_from_monitored(self, user_channel_id):
+        delete_query = f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{str(user_channel_id)}'"
+        self.do_commit(delete_query)
+
+
+# db_instance = MonitoredTelegramChannels(*DATA_FOR_DATABASE)
+#
+# # Добавьте данные в базу данных
+# db_instance.add_to_monitored("https://t.me/s/adm_gelen", -1001780000000)
+# db_instance.add_to_monitored("https://t.me/s/advocate_guzatullin", -1001780000000)
+# db_instance.add_to_monitored("https://t.me/s/Advokaty_PRO_lyudej", -1001780000000)
+# db_instance.add_to_monitored("https://t.me/s/advokatYashchenkoTaras", -1001780000000)
+# db_instance.add_to_monitored("https://t.me/s/ahunenno", -1001780000000)
+#
+# # Получите список URL
+# print(db_instance.get_subscribed_user_chanel_list(-1001780000000))

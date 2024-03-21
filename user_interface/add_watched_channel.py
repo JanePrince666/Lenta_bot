@@ -3,11 +3,13 @@ import re
 
 from aiogram import Router, F
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
+
 from config import DATA_FOR_DATABASE
-from db_management_OOP import ParsingChannels, Users
+from db_management_OOP import ParsingChannels, Users, MonitoredTelegramChannels
+from user_interface.buttons import make_row_callback_keyboard
 
 
 router = Router()  # [1]
@@ -18,7 +20,8 @@ class AddWatchedChannel(StatesGroup):
     adding_new_channel = State()
 
 
-answer = dict()
+user_channels_dict = dict()
+channel_to_adding = ""
 
 
 # Хэндлер на команду /add_channel_to_watched
@@ -27,37 +30,46 @@ async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
     user_channels = Users(*DATA_FOR_DATABASE).get_user_channels(message.chat.id)
 
     for i in user_channels:
-        answer[i[1]] = i[0]
+        user_channels_dict[i[1]] = i[0]
     await message.answer(
-        "Выберите канал, в который вы хотели бы получать новые посты"
+        "Выберите канал, в который вы хотели бы получать новые посты",
+        reply_markup=make_row_callback_keyboard(user_channels_dict)
     )
     await state.set_state(AddWatchedChannel.selecting_user_channel)
 
 
+@router.callback_query(F.data)
 @router.message(AddWatchedChannel.selecting_user_channel)
-async def select_user_channel(message: Message, state: FSMContext):
-    if "cancel" or "отмена" not in message.text:
-        await message.answer(
-            "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать"
-        )
+async def select_user_channel(callback_query: CallbackQuery, state: FSMContext):
+    if "cancel" or "отмена" not in callback_query.text:
+        global channel_to_adding
+        channel_to_adding = user_channels_dict[callback_query.data]
+        # print(channel_to_adding)
+        # await bot.send_message(callback_query.from_user.id, "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать")
+        await callback_query.answer("Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать", show_alert=True)
+
         await state.set_state(AddWatchedChannel.adding_new_channel)
 
 
 @router.message(AddWatchedChannel.adding_new_channel)
 async def handler_channel(message: Message, state: FSMContext):
     if "cancel" or "отмена" not in message.text:
-        if "https://t.me/" == message.text[:13] :
-            connection = ParsingChannels(*DATA_FOR_DATABASE)
+        if "https://t.me/" == message.text[:13]:
+            connection_to_parsing_channels = ParsingChannels(*DATA_FOR_DATABASE)
+            connection_to_monitored_telegram_channels = MonitoredTelegramChannels(*DATA_FOR_DATABASE)
             last_post = int(re.search("\/\d+", message.text).group()[1:])
             channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
             url = f"https://t.me/s/{channel_name}"
-            if connection.check_url(url):
-                await message.answer("Уже есть в базе данных")
+            print(url, last_post, channel_to_adding)
+            if connection_to_parsing_channels.check_url(url):
+                answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
+                await message.answer(answer_from_db)
             else:
                 # print(url, stub, last_post)
 
-                answer = connection.create_new_channel(url, last_post)
-                await message.answer(answer)
+                connection_to_parsing_channels.create_new_channel(url, last_post)
+                answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
+                await message.answer(answer_from_db)
         else:
             await message.answer("Не телеграм-пост")
             await message.delete()

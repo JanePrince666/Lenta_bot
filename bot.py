@@ -26,8 +26,8 @@ async def post():
     # print("начала постить")
     connection = PostingList(*DATA_FOR_DATABASE)
     new_posts = connection.get_posting_list()
-    for post_url, post_text in new_posts:
-        await bot.send_message(chat_id=CHANNEL_ID, text=f"{post_url}\n{post_text}")
+    for post_url, post_text, user_channel in new_posts:
+        await bot.send_message(chat_id=int(user_channel), text=f"{post_url}\n{post_text}")
         connection.del_from_posting_list(post_url)
 
 

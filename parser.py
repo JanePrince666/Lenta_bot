@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as bs
 from tor_python_easy.tor_control_port_client import TorControlPortClient
 
 from config import DATA_FOR_DATABASE, tor_pass
-from db_management_OOP import ParsingChannels, PostingList
+from db_management_OOP import ParsingChannels, PostingList, MonitoredTelegramChannels
 from profiler import time_of_function
 
 tor_control_port_client = TorControlPortClient('localhost', 9051, tor_pass)
@@ -49,8 +49,10 @@ def pars_channel(url, last_post_number, first_launch):
         # print(url, last_post_number, post_url_data, post_number)
         if post_number > last_post_number:
             last_post_number = post_number
-            if not first_launch:
-                PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post_url, text)
+            subscribed_user_channels = MonitoredTelegramChannels(*DATA_FOR_DATABASE).get_user_channels_subscribed_on_tg_channel(url)
+            if not first_launch and len(subscribed_user_channels) > 0:
+                for user_channel in subscribed_user_channels:
+                    PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post_url, text, user_channel)
     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(url, last_post_number)
 
 
