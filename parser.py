@@ -36,7 +36,7 @@ def pars_channel(url, last_post_number, first_launch):
         # print("Получила новый IP", file=open('report.txt', 'a'))
         posts = get_posts(url)
         if attempt_counter > 5:
-            return "Ошибка при подключении к Тору"
+            print("Ошибка при подключении к Тору")
     last_post_number = last_post_number
     for post in posts:
         post_url_data = post['data-post']
