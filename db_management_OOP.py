@@ -193,8 +193,10 @@ class MonitoredTelegramChannels(MySQL):
         insert_query = f"INSERT INTO `monitored_telegram_channels` (user_channel_id, tg_channel_url) VALUES ('{channel_id}', '{url}') "
         self.do_commit(insert_query)
 
-    def get_subscribed_user_chanel_list(self, url):
-        pass
+    def get_subscribed_user_chanel_list(self, user_channel_id):
+        data = f"SELECT tg_channel_url FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
+        rows = self.get_data_from_database(data)
+        return rows
 
     def del_from_monitored(self, url, channel_id):
         pass
