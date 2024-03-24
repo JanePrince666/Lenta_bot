@@ -211,16 +211,3 @@ class MonitoredTelegramChannels(MySQL):
     def del_from_monitored(self, user_channel_id):
         delete_query = f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{str(user_channel_id)}'"
         self.do_commit(delete_query)
-
-
-# db_instance = MonitoredTelegramChannels(*DATA_FOR_DATABASE)
-#
-# # Добавьте данные в базу данных
-# db_instance.add_to_monitored("https://t.me/s/adm_gelen", -1001780000000)
-# db_instance.add_to_monitored("https://t.me/s/advocate_guzatullin", -1001780000000)
-# db_instance.add_to_monitored("https://t.me/s/Advokaty_PRO_lyudej", -1001780000000)
-# db_instance.add_to_monitored("https://t.me/s/advokatYashchenkoTaras", -1001780000000)
-# db_instance.add_to_monitored("https://t.me/s/ahunenno", -1001780000000)
-#
-# # Получите список URL
-# print(db_instance.get_subscribed_user_chanel_list(-1001780000000))

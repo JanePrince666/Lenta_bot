@@ -10,7 +10,7 @@ from aiogram import Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import bot, DATA_FOR_DATABASE
-from user_interface import commands, add_user_channel, add_watched_channel
+from user_interface import commands, management_user_channel, management_watched_channel
 from parser import get_new_posts
 from db_management_OOP import PostingList
 from profiler import time_of_function

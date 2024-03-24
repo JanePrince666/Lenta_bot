@@ -44,7 +44,8 @@ async def select_user_channel(callback_query: CallbackQuery, state: FSMContext):
     if "cancel" or "отмена" not in callback_query.text:
         global channel_to_adding
         channel_to_adding = user_channels_dict[callback_query.data[12:]]
-        await bot.send_message(callback_query.from_user.id, "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать")
+        await callback_query.message.answer("Пришлите ссылку на последний пост из телеграм канала, который вы хотите "
+                                            "отслеживать")
         await state.set_state(AddWatchedChannel.adding_new_channel)
 
 
