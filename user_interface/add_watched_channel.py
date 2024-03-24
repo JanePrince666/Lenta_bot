@@ -7,7 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
-from config import DATA_FOR_DATABASE
+from config import bot, DATA_FOR_DATABASE
 from db_management_OOP import ParsingChannels, Users, MonitoredTelegramChannels
 from user_interface.buttons import make_row_callback_keyboard
 
@@ -38,16 +38,13 @@ async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
     await state.set_state(AddWatchedChannel.selecting_user_channel)
 
 
-@router.callback_query(F.data)
+@router.callback_query(F.data.startswith("add_channel_"))
 @router.message(AddWatchedChannel.selecting_user_channel)
 async def select_user_channel(callback_query: CallbackQuery, state: FSMContext):
     if "cancel" or "отмена" not in callback_query.text:
         global channel_to_adding
-        channel_to_adding = user_channels_dict[callback_query.data]
-        # print(channel_to_adding)
-        # await bot.send_message(callback_query.from_user.id, "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать")
-        await callback_query.answer("Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать", show_alert=True)
-
+        channel_to_adding = user_channels_dict[callback_query.data[12:]]
+        await bot.send_message(callback_query.from_user.id, "Пришлите ссылку на последний пост из телеграм канала, который вы хотите отслеживать")
         await state.set_state(AddWatchedChannel.adding_new_channel)
 
 

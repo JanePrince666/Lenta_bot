@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 
 from db_management_OOP import Users
 from config import DATA_FOR_DATABASE
-from bot import bot
+from config import bot
 
 router = Router()
 
