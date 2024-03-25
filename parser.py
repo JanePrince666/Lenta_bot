@@ -31,8 +31,10 @@ def get_html(url):
 def check_on_stub(url):
     soup = get_html(url)
     try:
-        soup.find('div', class_="tgme_page_additional")
-        return soup
+        if soup.find('div', class_="tgme_page_additional"):
+            return False
+        else:
+            return soup
     except:
         return False
 
