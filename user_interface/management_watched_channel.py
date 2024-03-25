@@ -8,6 +8,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
 from config import bot, DATA_FOR_DATABASE
+from parser import check_on_stub
 from db_management_OOP import ParsingChannels, Users, MonitoredTelegramChannels
 from user_interface.buttons import make_row_callback_keyboard
 
@@ -58,17 +59,29 @@ async def handler_channel(message: Message, state: FSMContext):
             last_post = int(re.search("\/\d+", message.text).group()[1:])
             channel_name = re.match(r'https://t.me/(\w+)', message.text).group(1)
             url = f"https://t.me/s/{channel_name}"
-            print(url, last_post, channel_to_adding)
             if connection_to_parsing_channels.check_url(url):
                 answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
                 await message.answer(answer_from_db)
             else:
                 # print(url, stub, last_post)
-
-                connection_to_parsing_channels.create_new_channel(url, last_post)
-                answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
-                await message.answer(answer_from_db)
+                if check_on_stub(url):
+                    connection_to_parsing_channels.create_new_channel(url, last_post)
+                    answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
+                    await message.answer(answer_from_db)
+                else:
+                    await message.answer("Не получилось открыть канал в вэб")
         else:
             await message.answer("Не телеграм-пост")
             await message.delete()
     await state.clear()
+
+
+@router.message(StateFilter(None), Command("cmd_del_channel_from_watched"))
+async def cmd_del_channel_from_watched(message: Message, state: FSMContext):
+    global user_channels_dict
+    user_channels_dict = get_user_channels_dict(message.from_user.id)
+    await message.answer(
+        "Выберите канал, из которого вы хотели бы удалить отслеживаемые каналы",
+        reply_markup=make_row_callback_keyboard(user_channels_dict)
+    )
+    await state.set_state(ManageWatchedChannel.selecting_for_del_user_channel)
