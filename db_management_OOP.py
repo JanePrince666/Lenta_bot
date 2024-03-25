@@ -1,4 +1,5 @@
 import mysql.connector
+
 from config import DATA_FOR_DATABASE
 from profiler import time_of_function
 
@@ -175,7 +176,7 @@ class Users(MySQL):
 class PostingList(MySQL):
 
     # @time_of_function
-    def add_to_posting_list(self, url, text, user_channel):
+    def add_to_posting_list(self, url: str, text: str, user_channel: int):
         """
         adds a post to the posting database table
 
@@ -226,5 +227,10 @@ class MonitoredTelegramChannels(MySQL):
         return [item[0] for item in self.get_data_from_database(data)]
 
     def del_from_monitored(self, user_channel_id):
-        delete_query = f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{str(user_channel_id)}'"
+        delete_query = f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
+        self.do_commit(delete_query)
+
+    def del_tg_channel_from_monitored(self, user_channel_id, tg_channel_url):
+        delete_query = (f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
+                        f"AND tg_channel_url = '{tg_channel_url}'")
         self.do_commit(delete_query)
