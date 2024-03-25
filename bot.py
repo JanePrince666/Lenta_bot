@@ -43,8 +43,8 @@ async def main():
 
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_routers(commands.router)
-    dp.include_router(add_user_channel.router)
-    dp.include_router(add_watched_channel.router)
+    dp.include_router(management_user_channel.router)
+    dp.include_router(management_watched_channel.router)
     t2.start()
     scheduler_for_posting.start()
     # Запускаем бота и пропускаем все накопленные входящие
