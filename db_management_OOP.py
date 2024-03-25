@@ -37,20 +37,20 @@ class MySQL:
 class ParsingChannels(MySQL):
 
     # @time_of_function
-    def create_new_channel(self, url: str, last_post_number: int):
+    def create_new_channel(self, url: str, last_post_number: int, name: str):
         """
         creates a new channel in the ParsingChannel table
 
+        :param name:
         :param url: telegram channel url
         :param last_post_number: int
         """
-        if type(url) != str or len(url) == 0 or type(last_post_number) != int:
+        if type(url) != str or len(url) == 0 or len(name) == 0 or type(last_post_number) != int:
             return "Ошибка при получении данных"
-        if self.check_url(url):
-            return "Уже есть в базе данных"
-        else:
-            insert_query = (f"INSERT INTO `ParsingChannels` (url, last_post_number) "
-                            f"VALUES ('{url}', '{last_post_number}') ")
+        if not self.check_url(url):
+
+            insert_query = (f"INSERT INTO `ParsingChannels` (url, last_post_number, channel_name) "
+                            f"VALUES ('{url}', '{last_post_number}', '{name}') ")
             self.do_commit(insert_query)
             return "Добавила!"
 
@@ -86,6 +86,11 @@ class ParsingChannels(MySQL):
         """
         if self.check_url(url):
             change_query = f"UPDATE `ParsingChannels` SET last_post_number = '{new_data}' WHERE url = '{url}' "
+            self.do_commit(change_query)
+
+    def change_channel_name(self, url: str, new_data: str):
+        if self.check_url(url):
+            change_query = f"UPDATE `ParsingChannels` SET channel_name = '{new_data}' WHERE url = '{url}' "
             self.do_commit(change_query)
 
     # @time_of_function

@@ -64,8 +64,10 @@ async def handler_channel(message: Message, state: FSMContext):
                 await message.answer(answer_from_db)
             else:
                 # print(url, stub, last_post)
-                if check_on_stub(url):
-                    connection_to_parsing_channels.create_new_channel(url, last_post)
+                soup = check_on_stub(url)
+                if soup:
+                    channel_name = soup.find('div', class_="tgme_channel_info_header_title").text
+                    connection_to_parsing_channels.create_new_channel(url, last_post, channel_name)
                     answer_from_db = connection_to_monitored_telegram_channels.add_to_monitored(url, channel_to_adding)
                     await message.answer(answer_from_db)
                 else:
