@@ -101,10 +101,22 @@ class ParsingChannels(MySQL):
         :type url: str
         """
         if self.check_url(url):
-            select_channel_stub = (f"SELECT last_post_number FROM `ParsingChannels`"
+            select_channel_last_post_number= (f"SELECT last_post_number FROM `ParsingChannels`"
                                    f"WHERE url = '{url}' ")
-            number = self.get_data_from_database(select_channel_stub)[0][0]
+            number = self.get_data_from_database(select_channel_last_post_number)[0][0]
             return number
+
+    def get_channel_name(self, url: str):
+        """
+        returns the telegram channel name by url
+
+        :type url: str
+        """
+        if self.check_url(url):
+            select_channel_name = (f"SELECT channel_name FROM `ParsingChannels`"
+                                   f"WHERE url = '{url}' ")
+            name = self.get_data_from_database(select_channel_name)[0][0]
+            return name
 
     # @time_of_function
     def get_channels_list(self):
