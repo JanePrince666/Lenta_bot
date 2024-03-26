@@ -1,8 +1,24 @@
 from aiogram import types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 from typing import Optional
 from aiogram.filters.callback_data import CallbackData
+
+
+def make_reply_keyboard_start():
+    builder = ReplyKeyboardBuilder()
+    builder.row(KeyboardButton(text="Посмотреть мои каналы для постинга"))
+    builder.row(KeyboardButton(text="Добавить мой канал для постинга"),
+                KeyboardButton(text="Добавить канал в отслеживаемые"),
+                width=4
+    )
+    builder.row(
+        KeyboardButton(text="Удалить канал из отслеживаемых"),
+        KeyboardButton(text="Удалить мой канал из каналов для постинга")
+    )
+
+    builder.row(KeyboardButton(text="отмена"))
+    return builder.as_markup(resize_keyboard=True)
 
 
 def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:

@@ -1,32 +1,47 @@
 from aiogram import Router, F
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 
-from db_management_OOP import Users
+from db_management_OOP import Users, MonitoredTelegramChannels
 from config import DATA_FOR_DATABASE
 from config import bot
+from user_interface.buttons import make_row_callback_keyboard
 
 router = Router()
 
 
-class AddUserChannel(StatesGroup):
+class ManageUserChannel(StatesGroup):
+    selecting_user_channel_for_delite = State()
     adding_my_channel = State()
+
+
+user_channels_dict = dict()
+selected_channel = None
+
+
+def get_user_channels_dict(user_id):
+    user_channels = Users(*DATA_FOR_DATABASE).get_user_channels(user_id)
+    global user_channels_dict
+    for i in user_channels:
+        user_channels_dict[i[1]] = i[0]
 
 
 # Хэндлер на команду /add_my_channel
 @router.message(StateFilter(None), Command("add_my_channel"))
+@router.message(F.text.lower() == "добавить мой канал для постинга")
 async def add_my_channel(message: Message, state: FSMContext):
     await message.answer(
         "1. Добавьте бота в канал для постинга отслеживаемых новостей в качестве администратора\n"
         "2. Напишите пост в своем канале\n"
         "3. Перешлите пост из своего канала боту"
     )
-    await state.set_state(AddUserChannel.adding_my_channel)
+    await message.delete()
+    await state.set_state(ManageUserChannel.adding_my_channel)
 
 
-@router.message(AddUserChannel.adding_my_channel)
+@router.message(ManageUserChannel.adding_my_channel)
 async def add_new_user_channel(message: Message, state: FSMContext):
     if "cancel" or "отмена" not in message.text:
         Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
@@ -35,3 +50,24 @@ async def add_new_user_channel(message: Message, state: FSMContext):
         await bot.send_message(chat_id=message.chat.id, text=f"канал добавлен в каналы для постинга")
         await state.clear()
     # print(message)
+
+
+@router.message(StateFilter(None), Command("del_my_channel"))
+@router.message(F.text.lower() == "удалить мой канал из каналов для постинга")
+async def del_my_channel(message: Message, state: FSMContext):
+    get_user_channels_dict(message.from_user.id)
+    await message.answer("Выберете ваш канал, который вы хотите удалить из каналов для постинга. Помните, "
+                         "после завершения удаления, отменить действие будет невозможно!",
+                         reply_markup=make_row_callback_keyboard(user_channels_dict, "del_user_channel_")
+                         )
+    await message.delete()
+    await state.set_state(ManageUserChannel.selecting_user_channel_for_delite)
+
+
+@router.callback_query(F.data.startswith("del_user_channel_"))
+@router.message(ManageUserChannel.selecting_user_channel_for_delite)
+async def select_watches_channel_for_delite(callback_query: CallbackQuery, state: FSMContext):
+    user_channel_for_delite = callback_query[17:]
+    user_channel_id = user_channels_dict[user_channel_for_delite]
+    MonitoredTelegramChannels(*DATA_FOR_DATABASE).del_from_monitored(user_channel_id)
+    Users(*DATA_FOR_DATABASE).del_user_channel(user_channel_id)

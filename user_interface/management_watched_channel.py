@@ -44,17 +44,18 @@ def get_user_channels_dict(user_id):
     global user_channels_dict
     for i in user_channels:
         user_channels_dict[i[1]] = i[0]
-    return user_channels_dict
 
 
 # Хэндлер на команду /add_channel_to_watched
 @router.message(StateFilter(None), Command("add_channel_to_watched"))
+@router.message(F.text.lower() == "добавить канал в отслеживаемые")
 async def cmd_add_channel_to_watched(message: Message, state: FSMContext):
     get_user_channels_dict(message.from_user.id)
     await message.answer(
         "Выберите канал, в который вы хотели бы получать новые посты",
         reply_markup=make_row_callback_keyboard(user_channels_dict, "add_channel_")
     )
+    await message.delete()
     await state.set_state(ManageWatchedChannel.selecting_user_channel)
 
 
@@ -98,13 +99,15 @@ async def handler_channel(message: Message, state: FSMContext):
 
 
 @router.message(StateFilter(None), Command("del_channel_from_watched"))
+@router.message(F.text.lower() == "удалить канал из отслеживаемых")
 async def cmd_del_channel_from_watched(message: Message, state: FSMContext):
-    global user_channels_dict
-    user_channels_dict = get_user_channels_dict(message.from_user.id)
+    # global user_channels_dict
+    get_user_channels_dict(message.from_user.id)
     await message.answer(
         "Выберите канал, из которого вы хотели бы удалить отслеживаемые каналы",
         reply_markup=make_row_callback_keyboard(user_channels_dict, "del_from_channel_")
     )
+    await message.delete()
     await state.set_state(ManageWatchedChannel.selecting_for_del_user_channel)
 
 
