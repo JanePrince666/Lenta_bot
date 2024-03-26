@@ -11,12 +11,12 @@ def make_reply_keyboard_start():
     builder.row(KeyboardButton(text="Добавить мой канал для постинга"),
                 KeyboardButton(text="Добавить канал в отслеживаемые"),
                 width=4
-    )
+                )
     builder.row(
         KeyboardButton(text="Удалить канал из отслеживаемых"),
         KeyboardButton(text="Удалить мой канал из каналов для постинга")
     )
-
+    builder.row(KeyboardButton(text="Добавить текущий чат для постинга"))
     builder.row(KeyboardButton(text="отмена"))
     return builder.as_markup(resize_keyboard=True)
 
@@ -26,7 +26,7 @@ def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:
     for item in items:
         keyboard.button(
             text=item,
-            callback_data=pref+item,
+            callback_data=pref + item,
         )
 
     keyboard.adjust(1)
@@ -36,7 +36,7 @@ def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:
 def make_row_callback_keyboard_with_scrolling(page, urls, number):
     keyboard = InlineKeyboardBuilder()
     for item in page:
-        keyboard.add(InlineKeyboardButton(text=str(item), callback_data="del_"+urls[page.index(item)]))
+        keyboard.add(InlineKeyboardButton(text=str(item), callback_data="del_" + urls[page.index(item)]))
         keyboard.adjust(1)
 
     keyboard.add(InlineKeyboardButton(text="Назад", callback_data="prev"))

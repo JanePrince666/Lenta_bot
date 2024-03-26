@@ -28,6 +28,14 @@ def get_user_channels_dict(user_id):
         user_channels_dict[i[1]] = i[0]
 
 
+@router.message(StateFilter(None), Command("add_my_chat"))
+@router.message(F.text.lower() == "добавить текущий чат для постинга")
+async def make_current_chat_chat_for_posting(message: Message):
+    Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.from_user.id, message.chat.id, message.chat.full_name)
+    await message.answer("Чат добавлен в чат для постинга. Для управления подписками перейдите в личные сообщения с "
+                         "ботом.")
+
+
 # Хэндлер на команду /add_my_channel
 @router.message(StateFilter(None), Command("add_my_channel"))
 @router.message(F.text.lower() == "добавить мой канал для постинга")
