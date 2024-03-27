@@ -206,7 +206,13 @@ class PostingList(MySQL):
 
 
 class MonitoredTelegramChannels(MySQL):
-    def add_to_monitored(self, url, channel_id):
+    def add_to_monitored(self, url: str, channel_id: int):
+        """
+        Adds the URL of the Telegram channel to the list of monitored channels for the specified user channel.
+
+        :param url: str
+        :type channel_id: int
+        """
         monitored_channels = self.get_subscribed_user_chanel_list(channel_id)
         if url in monitored_channels:
             return "Уже в канале"
@@ -215,22 +221,44 @@ class MonitoredTelegramChannels(MySQL):
             self.do_commit(insert_query)
             return "Добавила"
 
-    def get_subscribed_user_chanel_list(self, user_channel_id):
+    def get_subscribed_user_chanel_list(self, user_channel_id: int):
+        """
+        return list of urls of telegram channels, subscribed on user channel/chat
+        :type user_channel_id: int
+        :return list[str]
+        """
         data = (f"SELECT tg_channel_url FROM `monitored_telegram_channels` "
                 f"WHERE user_channel_id = {user_channel_id} ")
 
         return [item[0] for item in self.get_data_from_database(data)]
 
-    def get_user_channels_subscribed_on_tg_channel(self, tg_channel_url):
+    def get_user_channels_subscribed_on_tg_channel(self, tg_channel_url: str):
+        """
+        return list of user's channels id that subscribed on monitored telegram channel
+
+        :type tg_channel_url: str
+        :return list[float]
+        """
         data = (f"SELECT user_channel_id FROM `monitored_telegram_channels` "
                 f"WHERE tg_channel_url = '{tg_channel_url}' ")
         return [item[0] for item in self.get_data_from_database(data)]
 
-    def del_from_monitored(self, user_channel_id):
+    def del_from_monitored(self, user_channel_id: int):
+        """
+        delite user channel and all it's subscription
+
+        :type user_channel_id: int
+        """
         delete_query = f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
         self.do_commit(delete_query)
 
-    def del_tg_channel_from_monitored(self, user_channel_id, tg_channel_url):
+    def del_tg_channel_from_monitored(self, user_channel_id: int, tg_channel_url: int):
+        """
+        delite telegram channel from monitored channels
+
+        :param user_channel_id: int
+        :type tg_channel_url: str
+        """
         delete_query = (f"DELETE FROM `monitored_telegram_channels` WHERE user_channel_id = '{user_channel_id}'"
                         f"AND tg_channel_url = '{tg_channel_url}'")
         self.do_commit(delete_query)
