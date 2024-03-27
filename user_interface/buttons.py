@@ -1,13 +1,16 @@
-from aiogram import types
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
-from typing import Optional
-from aiogram.filters.callback_data import CallbackData
 
 
-def make_reply_keyboard_start():
+# Функция для создания клавиатуры с кнопками ответа (ReplyKeyboard).
+def make_reply_keyboard_start() -> ReplyKeyboardMarkup:
+    """
+
+    :return: ReplyKeyboardMarkup
+    """
     builder = ReplyKeyboardBuilder()
-    builder.row(KeyboardButton(text="Посмотреть мои каналы для постинга"))
+    builder.row(KeyboardButton(text="Посмотреть мои каналы для постинга"),
+                KeyboardButton(text="Добавить текущий чат для постинга"))
     builder.row(KeyboardButton(text="Добавить мой канал для постинга"),
                 KeyboardButton(text="Добавить канал в отслеживаемые"),
                 width=4
@@ -16,12 +19,18 @@ def make_reply_keyboard_start():
         KeyboardButton(text="Удалить канал из отслеживаемых"),
         KeyboardButton(text="Удалить мой канал из каналов для постинга")
     )
-    builder.row(KeyboardButton(text="Добавить текущий чат для постинга"))
     builder.row(KeyboardButton(text="отмена"))
     return builder.as_markup(resize_keyboard=True)
 
 
 def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:
+    """
+
+    :param pref: str
+    :type items: dict
+
+    :return InlineKeyboardMarkup
+    """
     keyboard = InlineKeyboardBuilder()
     for item in items:
         keyboard.button(
@@ -33,7 +42,15 @@ def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:
     return keyboard.as_markup()
 
 
-def make_row_callback_keyboard_with_scrolling(page, urls, number):
+# Функция для создания инлайн-клавиатуры с прокруткой по страницам.
+def make_row_callback_keyboard_with_scrolling(page: list[str], urls: list[str], number: str) -> InlineKeyboardMarkup:
+    """
+
+    :param page: list[str]
+    :param urls: urls: list[str]
+    :param number: str
+    :return: InlineKeyboardMarkup
+    """
     keyboard = InlineKeyboardBuilder()
     for item in page:
         keyboard.add(InlineKeyboardButton(text=str(item), callback_data="del_" + urls[page.index(item)]))
