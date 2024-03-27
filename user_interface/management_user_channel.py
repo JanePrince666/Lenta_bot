@@ -62,7 +62,7 @@ async def add_new_user_channel(message: Message, state: FSMContext):
 
 @router.message(StateFilter(None), Command("del_my_channel"))
 @router.message(F.text.lower() == "удалить мой канал из каналов для постинга")
-async def del_my_channel(message: Message, state: FSMContext):
+async def cmd_del_my_channel(message: Message, state: FSMContext):
     get_user_channels_dict(message.from_user.id)
     await message.answer("Выберете ваш канал, который вы хотите удалить из каналов для постинга. Помните, "
                          "после завершения удаления, отменить действие будет невозможно!",
@@ -74,8 +74,9 @@ async def del_my_channel(message: Message, state: FSMContext):
 
 @router.callback_query(F.data.startswith("del_user_channel_"))
 @router.message(ManageUserChannel.selecting_user_channel_for_delite)
-async def select_watches_channel_for_delite(callback_query: CallbackQuery, state: FSMContext):
+async def delite_monitored_channel(callback_query: CallbackQuery, state: FSMContext):
     user_channel_for_delite = callback_query[17:]
     user_channel_id = user_channels_dict[user_channel_for_delite]
     MonitoredTelegramChannels(*DATA_FOR_DATABASE).del_from_monitored(user_channel_id)
     Users(*DATA_FOR_DATABASE).del_user_channel(user_channel_id)
+    await state.clear()
