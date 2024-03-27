@@ -33,10 +33,12 @@ async def cmd_info(message: Message):
         "/add_my_channel\n"
         "/view_my_channels\n"
         "/del_channel_from_watched\n"
+        "/del_my_channel\n"
     )
     await message.delete()
 
 
+# Обработчик команды для просмотра каналов пользователя.
 @router.message(StateFilter(None), Command("view_my_channels"))
 @router.message(F.text.lower() == "посмотреть мои каналы для постинга")
 async def view_my_channels(message: Message):
@@ -47,15 +49,12 @@ async def view_my_channels(message: Message):
     await message.delete()
 
 
+# Обработчик команды отмена
 @router.message(Command("cancel"))
 @router.message(F.text.lower() == "отмена")
 async def cmd_cancel(message: Message, state: FSMContext):
-    if state is None:
-        await message.answer(
-            "Вы не находитесь на стадии добавления своего канала или канала для отследивания"
-        )
-    else:
-        await message.answer(
-            "Добавление отменено"
-        )
-        await state.clear()
+    await message.answer(
+        "Добавление/удаление отменено"
+    )
+    await state.clear()
+    await message.delete()
