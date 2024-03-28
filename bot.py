@@ -31,8 +31,6 @@ async def post():
         connection.del_from_posting_list(post_url)
 
 
-# print(f"время постинга поста: {datetime.datetime.now()}")
-
 # Создаем задачу по времени
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")
 scheduler_for_posting.add_job(post, "interval", seconds=10)
