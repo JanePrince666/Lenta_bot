@@ -97,7 +97,7 @@ def pars_channel(url: str, last_post_number: int, first_launch: bool):
             print("Ошибка при подключении к Тору")
     last_post_number = last_post_number
 
-    # Проверяет каждый пост на наличие новой информации и обновляет последний номер поста для канала.
+    # Проверяет каждый пост на наличие текстовой информации
     for post in posts:
         post_url_data = post['data-post']
         post_number = int(re.search('\/\d+', post_url_data).group()[1:])
@@ -108,7 +108,7 @@ def pars_channel(url: str, last_post_number: int, first_launch: bool):
             text = ""
 
         # При обнаружении нового поста, добавляет его в список для публикации для подписчиков канала,
-        # если это не первый запуск бота и если есть каналы, которые подписаны на данный телеграм канал
+        # Если это не первый запуск бота и если есть каналы, которые подписаны на данный телеграм канал
         if post_number > last_post_number:
             last_post_number = post_number
             subscribed_user_channels = MonitoredTelegramChannels(
@@ -116,6 +116,8 @@ def pars_channel(url: str, last_post_number: int, first_launch: bool):
             if not first_launch and len(subscribed_user_channels) > 0:
                 for user_channel in subscribed_user_channels:
                     PostingList(*DATA_FOR_DATABASE).add_to_posting_list(post_url, text, user_channel)
+
+    # Обновляет номер последнего поста для канала в базе данных
     ParsingChannels(*DATA_FOR_DATABASE).change_channel_last_post(url, last_post_number)
 
 
@@ -129,8 +131,7 @@ def get_channel_lisl() -> list[str]:
     connection = ParsingChannels(*DATA_FOR_DATABASE)
     channel_list = connection.get_channels_list()
 
-    # Разделяет список каналов на подсписки по 20 элементов и возвращает
-    # их по одному при каждом вызове функции с помощью генератора.
+    # Разделяет список каналов на блоки по 20 каналов в каждом и при помощи генератора выдает эти блоки
     for i in range(0, len(channel_list), 20):
         unit = channel_list[i:i + 20]
         yield unit
@@ -138,15 +139,18 @@ def get_channel_lisl() -> list[str]:
 
 # Функция для получения новых постов с каналов.
 def get_new_posts():
-    first_launch = True # Устанавливает флаг первого запуска в True.
+    """
+    endlessly parses telegram channels from a list of 20 at a time
+
+    """
+    first_launch = True  # Устанавливает флаг первого запуска в True.
 
     # Бесконечный цикл для обработки новых постов.
     while True:
         channels = get_channel_lisl()
         for unit in channels:
 
-            # Для каждого из 20 канала запускает параллельный процесс парсинга постов с указанием URL канала,
-            # номера последнего поста и флага первого запуска.
+            # Для каждого из 20 канала запускает параллельный процесс парсинга постов
             for url, start_post in unit:
                 t = multiprocessing.Process(target=pars_channel, args=(url, start_post, first_launch,))
                 t.start()
