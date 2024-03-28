@@ -27,7 +27,7 @@ def make_row_callback_keyboard(items: dict, pref: str) -> InlineKeyboardMarkup:
     """
 
     :param pref: str
-    :type items: dict
+    :param items: dict
 
     :return InlineKeyboardMarkup
     """
