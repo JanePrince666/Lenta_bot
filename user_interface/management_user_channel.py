@@ -51,11 +51,21 @@ async def add_my_channel(message: Message, state: FSMContext):
 
 @router.message(ManageUserChannel.adding_my_channel)
 async def add_new_user_channel(message: Message, state: FSMContext):
+    """
+    get data from forward message and update database
+
+    :param message: Message
+    :param state: FSMContext
+    """
     if "cancel" or "отмена" not in message.text:
-        Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
-                                                            message.forward_from_chat.full_name)
-        await bot.send_message(chat_id=message.forward_from_chat.id, text=f"канал добавлен в каналы для постинга")
-        await bot.send_message(chat_id=message.chat.id, text=f"канал добавлен в каналы для постинга")
+        try:
+            Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
+                                                                message.forward_from_chat.full_name)
+            await bot.send_message(chat_id=message.forward_from_chat.id, text=f"канал добавлен в каналы для постинга")
+            await bot.send_message(chat_id=message.chat.id, text=f"канал добавлен в каналы для постинга")
+        except:
+            await message.anwer("Что-то пошло не так. Вы добавили бота в канал и сделали его администратором?")
+
         await state.clear()
     # print(message)
 
