@@ -1,18 +1,13 @@
 from aiogram import Router, F
-from aiogram.fsm.state import State
-from aiogram.types import Message, KeyboardButton
+from aiogram.types import Message
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from db_management_OOP import Users
 from config import DATA_FOR_DATABASE
 from user_interface.buttons import make_reply_keyboard_start, make_row_callback_keyboard
 
 router = Router()  # [1]
-
-
-# state = State()
 
 
 # Хэндлер на команду /start
