@@ -49,7 +49,7 @@ EXPOSE 9050
 # Запустите Tor
 CMD ["tor"]
 
-CMD ["gunicorn", "python", "bot.py"]
+CMD ["python", "bot.py"]
 
 # Switch to the non-privileged user to run the application.
 USER appuser
@@ -59,4 +59,4 @@ USER appuser
 EXPOSE 8000
 
 # Run the application.
-CMD gunicorn 'venv.lib.python3.11.site-packages.asgiref.wsgi' --bind=0.0.0.0:8000
+CMD gunicorn 'asgiref.wsgi:application' --bind=0.0.0.0:8000
