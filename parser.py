@@ -19,18 +19,38 @@ proxy_config = {
 }
 
 
+def get_html(url):
+    try:
+        response = requests.get(url, proxies=proxy_config)
+        soup = bs(response.content, 'html.parser')
+        return soup
+    except:
+        print("Не удалось получить html")
+
+
+def check_on_stub(url):
+    soup = get_html(url)
+    try:
+        soup.find('div', class_="tgme_page_additional")
+        return soup
+    except:
+        return False
+
+
 def get_posts(url):
-    response = requests.get(url, proxies=proxy_config)
-    soup = bs(response.content, 'html.parser')
-    posts = soup.find_all('div', class_="tgme_widget_message text_not_supported_wrap js-widget_message")
-    return posts
+    soup = check_on_stub(url)
+    if soup:
+        posts = soup.find_all('div', class_="tgme_widget_message text_not_supported_wrap js-widget_message")
+        return posts
+    else:
+        return False
 
 
 # @time_of_function
 def pars_channel(url, last_post_number, first_launch):
     posts = get_posts(url)
     attempt_counter = 0
-    while len(posts) == 0:
+    while not posts:
         attempt_counter += 1
         tor_control_port_client.change_connection_ip(seconds_wait=5)
         # print("Получила новый IP", file=open('report.txt', 'a'))
