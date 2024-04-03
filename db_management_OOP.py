@@ -1,4 +1,8 @@
 import mysql.connector
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 from config import DATA_FOR_DATABASE
 from profiler import time_of_function
@@ -6,17 +10,29 @@ from profiler import time_of_function
 
 class MySQL:
     # @time_of_function
-    def __init__(self, host: str, user: str, password: str, db_name: str) -> object:
+    def __init__(self, host: str, port: int, user: str, password: str, db_name: str) -> object:
         """
         creates a connection to the database
 
         """
         self.connection = mysql.connector.connect(
             host=host,
+            port=port,
             user=user,
             password=password,
             database=db_name,
         )
+        # try:
+        #     self.connection = mysql.connector.connect(
+        #         host=host,
+        #         port=port,
+        #         user=user,
+        #         password=password,
+        #         database=db_name
+        #     )
+        #     logger.info("Успешное подключение к базе данных.")
+        # except mysql.connector.Error as e:
+        #     logger.error(f"Ошибка подключения к базе данных: {e}")
 
     def do_commit(self, new_data):
         with self.connection.cursor() as cursor:
@@ -49,7 +65,6 @@ class ParsingChannels(MySQL):
         if type(url) != str or len(url) == 0 or len(name) == 0 or type(last_post_number) != int:
             return "Ошибка при получении данных"
         if not self.check_url(url):
-
             insert_query = (f"INSERT INTO `ParsingChannels` (url, last_post_number, channel_name) "
                             f"VALUES ('{url}', '{last_post_number}', '{name}') ")
             self.do_commit(insert_query)
@@ -102,8 +117,8 @@ class ParsingChannels(MySQL):
         :type url: str
         """
         if self.check_url(url):
-            select_channel_last_post_number= (f"SELECT last_post_number FROM `ParsingChannels`"
-                                   f"WHERE url = '{url}' ")
+            select_channel_last_post_number = (f"SELECT last_post_number FROM `ParsingChannels`"
+                                               f"WHERE url = '{url}' ")
             number = self.get_data_from_database(select_channel_last_post_number)[0][0]
             return number
 
