@@ -75,13 +75,14 @@ async def add_new_user_channel(message: Message, state: FSMContext):
     :param state: FSMContext
     """
     if "cancel" or "отмена" not in message.text:
+        # print(message.chat.id, message.forward_from_chat.id, message.forward_from_chat.full_name)
         try:
             Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
                                                                 message.forward_from_chat.full_name)
             await bot.send_message(chat_id=message.forward_from_chat.id, text=f"канал добавлен в каналы для постинга")
             await bot.send_message(chat_id=message.chat.id, text=f"канал добавлен в каналы для постинга")
         except:
-            await message.anwer("Что-то пошло не так. Вы добавили бота в канал и сделали его администратором?")
+            await message.answer("Что-то пошло не так. Вы добавили бота в канал и сделали его администратором?")
 
         await state.clear()
     # print(message)
