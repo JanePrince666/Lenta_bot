@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+#syntax=docker/dockerfile:1
 
 # Comments are provided throughout this file to help you get started.
 # If you need more help, visit the Dockerfile reference guide at
@@ -6,9 +6,7 @@
 
 ARG PYTHON_VERSION=3.11.7
 FROM python:${PYTHON_VERSION}-slim as base
-
-RUN apt-get update && apt-get install -y tor && \
-    echo 'ControlPort 9051nSOCKSPort 9050nExitPolicy reject *:*' >> /etc/tor/torrc
+RUN apt-get update && apt-get install -y tor
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -30,6 +28,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
     python -m pip install -r requirements.txt
 
+# Настройка среды для работы с Tor
+ENV http_proxy="socks5://host.docker.internal:9050"
+ENV https_proxy="socks5://host.docker.internal:9050"
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/develop/develop-images/dockerfile_best-practices/#user
@@ -54,9 +55,5 @@ CMD ["python", "bot.py"]
 # Switch to the non-privileged user to run the application.
 USER appuser
 
-
 # Expose the port that the application listens on.
 EXPOSE 8000
-
-# Run the application.
-CMD gunicorn 'asgiref.wsgi:application' --bind=0.0.0.0:8000

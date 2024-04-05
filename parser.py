@@ -1,6 +1,6 @@
-import datetime
 import re
 import time
+
 import requests
 import multiprocessing
 from bs4 import BeautifulSoup as bs
@@ -11,20 +11,24 @@ from db_management_OOP import ParsingChannels, PostingList, MonitoredTelegramCha
 from profiler import time_of_function
 
 # Настройка прокси-сервера для обхода блокировок и анонимного доступа к веб-ресурсам.
-tor_control_port_client = TorControlPortClient('localhost', 9051, tor_pass)
+tor_control_port_client = TorControlPortClient('tor', 9050, tor_pass)
 
 # Устанавливаем соединение с Tor Control Port и меняем IP-адрес через Tor каждые 5 секунд.
 tor_control_port_client.change_connection_ip(seconds_wait=5)
 
 # Задаем конфигурацию прокси-сервера для использования SOCKS5 прокси на локальном хосте и
 # порту 9050 для HTTP и HTTPS запросов.
+# proxy_config = {
+#     'http': 'socks5://localhost:9050',
+#     'https': 'socks5://localhost:9050',
+# }
 proxy_config = {
-    'http': 'socks5://localhost:9050',
-    'https': 'socks5://localhost:9050',
+    'http': 'socks5://tor:9050',
+    'https': 'socks5://tor:9050',
 }
 
 
-# Функция для получения HTML-кода веб-страницы 
+# Функция для получения HTML-кода веб-страницы
 def get_html(url: str):
     """
     return BeautifulSoup object by url
@@ -36,8 +40,8 @@ def get_html(url: str):
         response = requests.get(url, proxies=proxy_config)
         soup = bs(response.content, 'html.parser')
         return soup
-    except:
-        print("Не удалось получить html")
+    except Exception as e:
+        print(f"Не удалось получить html: {e}")
 
 
 def check_on_stub(url: str):
@@ -91,7 +95,6 @@ def pars_channel(url: str, last_post_number: int, first_launch: bool):
     while not posts:
         attempt_counter += 1
         tor_control_port_client.change_connection_ip(seconds_wait=5)
-        # print("Получила новый IP", file=open('report.txt', 'a'))
         posts = get_posts(url)
         if attempt_counter > 5:
             print("Ошибка при подключении к Тору")

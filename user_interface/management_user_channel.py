@@ -75,7 +75,6 @@ async def add_new_user_channel(message: Message, state: FSMContext):
     :param state: FSMContext
     """
     if "cancel" or "отмена" not in message.text:
-        # print(message.chat.id, message.forward_from_chat.id, message.forward_from_chat.full_name)
         try:
             Users(*DATA_FOR_DATABASE).add_user_and_user_channel(message.chat.id, message.forward_from_chat.id,
                                                                 message.forward_from_chat.full_name)
@@ -85,7 +84,6 @@ async def add_new_user_channel(message: Message, state: FSMContext):
             await message.answer("Что-то пошло не так. Вы добавили бота в канал и сделали его администратором?")
 
         await state.clear()
-    # print(message)
 
 
 @router.message(StateFilter(None), Command("del_my_channel"))
@@ -115,7 +113,8 @@ async def delite_monitored_channel(callback_query: CallbackQuery, state: FSMCont
     :param callback_query: CallbackQuery
     :param state: FSMContext
     """
-    user_channel_for_delite = callback_query[17:]
+    print(callback_query.data)
+    user_channel_for_delite = callback_query.data[17:]
     user_channel_id = user_channels_dict[user_channel_for_delite]
     MonitoredTelegramChannels(*DATA_FOR_DATABASE).del_from_monitored(user_channel_id)
     Users(*DATA_FOR_DATABASE).del_user_channel(user_channel_id)

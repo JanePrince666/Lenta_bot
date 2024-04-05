@@ -4,9 +4,6 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-from config import DATA_FOR_DATABASE
-from profiler import time_of_function
-
 
 class MySQL:
     # @time_of_function
@@ -15,40 +12,46 @@ class MySQL:
         creates a connection to the database
 
         """
-        self.connection = mysql.connector.connect(
-            host=host,
-            port=port,
-            user=user,
-            password=password,
-            database=db_name,
-        )
-        # try:
-        #     self.connection = mysql.connector.connect(
-        #         host=host,
-        #         port=port,
-        #         user=user,
-        #         password=password,
-        #         database=db_name
-        #     )
-        #     logger.info("Успешное подключение к базе данных.")
-        # except mysql.connector.Error as e:
-        #     logger.error(f"Ошибка подключения к базе данных: {e}")
+        try:
+            self.connection = mysql.connector.connect(
+                host=host,
+                port=port,
+                user=user,
+                password=password,
+                database=db_name
+            )
+            # logger.info("Успешное подключение к базе данных.")
+        except mysql.connector.Error as e:
+            logger.error(f"Ошибка подключения к базе данных: {e}")
 
     def do_commit(self, new_data):
-        with self.connection.cursor() as cursor:
-            cursor.execute(new_data)
-            self.connection.commit()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(new_data)
+                self.connection.commit()
+                # logger.info("Успешное добавление в базу данных.")
+        except Exception as e:
+            logger.error(f"Ошибка добавления в базу данных: {e}")
 
     def get_data_from_database(self, inquiry):
-        with self.connection.cursor() as cursor:
-            cursor.execute(inquiry)
-            return cursor.fetchall()
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(inquiry)
+                # logger.error(f"Успешное получение данных из базы данных")
+                return cursor.fetchall()
+        except Exception as e:
+            logger.error(f"Ошибка получения данных из базы данных: {e}")
 
     def __del__(self):
         """
         closes a database connection when it is no longer needed
         """
-        self.connection.close()
+        try:
+            self.connection.close()
+        except Exception as e:
+            logger.error(f"Ошибка закрытия базы данных: {e}")
+
+        # self.connection.close()
 
 
 class ParsingChannels(MySQL):
@@ -148,7 +151,7 @@ class ParsingChannels(MySQL):
 
 class Users(MySQL):
 
-    def add_user_and_user_channel(self, user_id: int, user_channel_id: int, channel_name: str) -> object:
+    def add_user_and_user_channel(self, user_id: int, user_channel_id: int, channel_name: str):
         """
         adds the user and his channels for posting to the users table
 
@@ -156,7 +159,7 @@ class Users(MySQL):
         :param channel_name: str
         :param user_channel_id: int
         """
-        insert_query = f"INSERT INTO `users` (user_channel_id, user_id, channel_name) VALUES ({user_channel_id}, {user_id}, '{channel_name}')"
+        insert_query = f"INSERT INTO `users` (user_channel_id, user_id, channel_name) VALUES ({user_channel_id}, '{user_id}', '{channel_name}')"
         self.do_commit(insert_query)
 
     def get_user_channels(self, user_id: int):
