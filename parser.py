@@ -6,12 +6,12 @@ import multiprocessing
 from bs4 import BeautifulSoup as bs
 from tor_python_easy.tor_control_port_client import TorControlPortClient
 
-from config import DATA_FOR_DATABASE, tor_pass
+from config import DATA_FOR_DATABASE
 from db_management_OOP import ParsingChannels, PostingList, MonitoredTelegramChannels
 from profiler import time_of_function
 
 # Настройка прокси-сервера для обхода блокировок и анонимного доступа к веб-ресурсам.
-tor_control_port_client = TorControlPortClient('tor', 9050, tor_pass)
+tor_control_port_client = TorControlPortClient('tor', 9050)
 
 # Устанавливаем соединение с Tor Control Port и меняем IP-адрес через Tor каждые 5 секунд.
 tor_control_port_client.change_connection_ip(seconds_wait=5)

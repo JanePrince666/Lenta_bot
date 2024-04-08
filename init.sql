@@ -5,7 +5,7 @@ SET @@global.character_set_server = 'utf8mb4';
 SET @@global.collation_server = 'utf8mb4_unicode_ci';
 
 -- Создание пользователя и предоставление ему привилегий
-GRANT ALL PRIVILEGES ON *.* TO 'jane'@'%' IDENTIFIED BY 'PrinceoFhalfblood3464_' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'jane'@'%' IDENTIFIED BY MYSQL_PASSWORD WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 
 -- Выбор базы данных

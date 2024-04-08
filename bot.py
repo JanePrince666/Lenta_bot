@@ -1,6 +1,4 @@
 import asyncio
-import datetime
-import random
 import logging
 import sys
 import multiprocessing
@@ -29,7 +27,6 @@ async def post():
     for post_url, post_text, user_channel in new_posts:
         await bot.send_message(chat_id=int(user_channel), text=f"{post_url}\n{post_text}")
         connection.del_from_posting_list(post_url)
-
 
 # Создаем задачу по времени
 scheduler_for_posting = AsyncIOScheduler(timezone="Asia/Tbilisi")

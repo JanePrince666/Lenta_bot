@@ -9,12 +9,12 @@ services:
     volumes:
       - .:/app
     environment:
+      - DB_JANE_PASSWORD=${DB_JANE_PASSWORD}
+      - BOT_TOKEN=${BOT_TOKEN}
       - MYSQL_HOST=host.docker.internal
       - MYSQL_PORT=3306
       - NO_PROXY=localhost,127.0.0.1,mysql
       - TOR_PROXY=socks5://host.docker.internal:9050
-#      - http_proxy=socks5://host.docker.internal:9050
-#      - https_proxy=socks5://host.docker.internal:9050
     ports:
       - "8000:8000"
     depends_on:
@@ -26,10 +26,10 @@ services:
   mysql:
     image: mysql:5.7
     environment:
-      - MYSQL_ROOT_PASSWORD=rG1MoAkxoCxk_7A5W8(F
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=lenta_db
       - MYSQL_USER=jane
-      - MYSQL_PASSWORD=PrinceoFhalfblood3464_
+      - MYSQL_PASSWORD=${DB_JANE_PASSWORD}
       - MYSQL_ALLOW_EMPTY_PASSWORD=no
     ports:
       - "3307:3306"
